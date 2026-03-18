@@ -1,28 +1,40 @@
-use std::path::Path;
+use std::path::PathBuf;
 
-use clap::Parser;
+use clap::{Parser, Subcommand};
 
 use mcat::utils::{self, display_tag};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
-    /// the path of music file
-    #[arg(short, long, value_name = "path")]
-    path: String,
+    /// action
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    Display {
+        /// the path of music file to be displayed
+        #[arg(short, long, value_name = "path")]
+        path: PathBuf,
+    },
 }
 
 fn main() {
     let cli = Cli::parse();
-    let path = Path::new(&cli.path);
 
-    let primary_tag = match utils::get_primary_tag(path) {
-        Ok(tag) => tag,
-        Err(e) => {
-            eprintln!("Error: {:?}", e);
-            return;
-        }
-    };
+    match cli.command {
+        Commands::Display {path} => {
+            let primary_tag = match utils::get_primary_tag(path) {
+                Ok(tag) => tag,
+                Err(e) => {
+                    eprintln!("Error: {:?}", e);
+                    return;
+                }
+            };
 
-    display_tag(&primary_tag);
+            display_tag(&primary_tag);
+        },
+    }
 }
