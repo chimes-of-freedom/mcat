@@ -3,14 +3,18 @@ use lofty::{file::TaggedFile, prelude::*, probe::Probe, tag::Tag};
 
 use crate::McatError;
 
-fn get_tagged_file(file_path: &Path) -> Result<TaggedFile, McatError> {
+fn get_tagged_file<P: AsRef<Path>>(file_path: P) -> Result<TaggedFile, McatError> {
+    let file_path = file_path.as_ref();
+
     Probe::open(file_path)
         .map_err(|_| McatError::OpenFailed)?
         .read()
         .map_err(|_| McatError::ReadFailed)
 }
 
-pub fn get_primary_tag(file_path: &Path) -> Result<Tag, McatError> {
+pub fn get_primary_tag<P: AsRef<Path>>(file_path: P) -> Result<Tag, McatError> {
+    let file_path = file_path.as_ref();
+
     if !file_path.is_file() {
         return Err(McatError::FileNotFound);
     }
