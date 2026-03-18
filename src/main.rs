@@ -24,19 +24,19 @@ enum Commands {
         #[arg(long)]
         src: PathBuf,
 
-        /// title
+        /// new title
         #[arg(long)]
         title: Option<String>,
 
-        /// artist
+        /// new artist
         #[arg(long)]
         artist: Option<String>,
 
-        /// album
+        /// new album
         #[arg(long)]
         album: Option<String>,
 
-        /// genre
+        /// new genre
         #[arg(long)]
         genre: Option<String>,
 
