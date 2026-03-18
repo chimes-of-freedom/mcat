@@ -1,5 +1,5 @@
+use lofty::{config::WriteOptions, file::TaggedFile, prelude::*, probe::Probe, tag::Tag};
 use std::path::Path;
-use lofty::{file::TaggedFile, prelude::*, probe::Probe, tag::Tag, config::WriteOptions};
 
 use crate::{McatError, TagAttributes};
 
@@ -26,7 +26,7 @@ pub fn get_primary_tag<P: AsRef<Path>>(file_path: P) -> Result<Tag, McatError> {
         None => match tagged_file.first_tag() {
             Some(tag) => Ok(tag.clone()),
             None => Err(McatError::TagNotFound),
-        }
+        },
     }
 }
 
@@ -56,7 +56,11 @@ pub fn display_tag(primary_tag: &Tag) {
     );
 }
 
-pub fn edit_tag<P: AsRef<Path>>(output_path: P, tag: &mut Tag, tag_attrs: TagAttributes) -> Result<(), McatError> {
+pub fn edit_tag<P: AsRef<Path>>(
+    output_path: P,
+    tag: &mut Tag,
+    tag_attrs: TagAttributes,
+) -> Result<(), McatError> {
     if tag_attrs.is_empty() {
         return Err(McatError::AttrEmpty);
     }

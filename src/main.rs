@@ -27,7 +27,7 @@ enum Commands {
         /// title
         #[arg(long)]
         title: Option<String>,
-        
+
         /// artist
         #[arg(long)]
         artist: Option<String>,
@@ -60,9 +60,16 @@ fn main() {
             };
 
             utils::display_tag(&primary_tag);
-        },
+        }
 
-        Commands::Edit { src: src_path, dst: dst_path, title, artist, album, genre } => {
+        Commands::Edit {
+            src: src_path,
+            dst: dst_path,
+            title,
+            artist,
+            album,
+            genre,
+        } => {
             let mut primary_tag = match utils::get_primary_tag(&src_path) {
                 Ok(tag) => tag,
                 Err(e) => {
@@ -78,15 +85,22 @@ fn main() {
                     std::process::exit(1);
                 }
                 path
-            } else { src_path };
+            } else {
+                src_path
+            };
 
-            let tag_attrs = TagAttributes { title, artist, album, genre };
+            let tag_attrs = TagAttributes {
+                title,
+                artist,
+                album,
+                genre,
+            };
             if let Err(e) = utils::edit_tag(&output_path, &mut primary_tag, tag_attrs) {
                 eprintln!("Error: {:?}", e);
                 std::process::exit(1);
             }
 
             println!("Entered edit mode. Output path: {:?}", &output_path);
-        },
+        }
     }
 }
