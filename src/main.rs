@@ -103,7 +103,8 @@ fn main() {
                 std::process::exit(1);
             }
 
-            println!("Entered edit mode. Output path: {:?}", &output_path);
+            println!("Edit done.");
+            utils::display_tag(&primary_tag);
         }
     }
 }
