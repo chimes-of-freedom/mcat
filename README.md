@@ -21,8 +21,8 @@ Music Cataloging Tool
 Usage: mcat <COMMAND>
 
 Commands:
-  display  
-  edit     
+  display  display the music metadata
+  edit     write the music metadata
   help     Print this message or the help of the given subcommand(s)
 
 Options:
@@ -30,21 +30,29 @@ Options:
   -V, --version  Print version
 
 $ mcat display --help
-Usage: mcat display --path <PATH>
+display the music metadata
+
+Usage: mcat display <PATH>
+
+Arguments:
+  <PATH>  path of music file to display
 
 Options:
-      --path <PATH>  path of music file to be displayed
-  -h, --help         Print help
+  -h, --help  Print help
 
 $ mcat edit --help   
-Usage: mcat edit [OPTIONS] --src <SRC>
+write the music metadata
+
+Usage: mcat edit [OPTIONS] <SRC>
+
+Arguments:
+  <SRC>  path of music file to be edited
 
 Options:
-      --src <SRC>        path of music file to be edited
       --title <TITLE>    new title
       --artist <ARTIST>  new artist
       --album <ALBUM>    new album
       --genre <GENRE>    new genre
-      --dst <DST>        path of edited music file to be saved at
+  -o, --output <DST>     path of edited music file to be saved at (default `src`)
   -h, --help             Print help
 ```
