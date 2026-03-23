@@ -14,11 +14,14 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// display the music metadata
     Display {
         /// path of music file to be displayed
         #[arg(long)]
         path: PathBuf,
     },
+
+    /// write the music metadata
     Edit {
         /// path of music file to be edited
         #[arg(long)]
@@ -40,8 +43,8 @@ enum Commands {
         #[arg(long)]
         genre: Option<String>,
 
-        /// path of edited music file to be saved at
-        #[arg(long)]
+        /// path of edited music file to be saved at (default `src`)
+        #[arg(long = "output", short = 'o')]
         dst: Option<PathBuf>,
     },
 }
