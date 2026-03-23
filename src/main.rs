@@ -16,15 +16,13 @@ struct Cli {
 enum Commands {
     /// display the music metadata
     Display {
-        /// path of music file to be displayed
-        #[arg(long)]
+        /// path of music file to display
         path: PathBuf,
     },
 
     /// write the music metadata
     Edit {
         /// path of music file to be edited
-        #[arg(long)]
         src: PathBuf,
 
         /// new title
