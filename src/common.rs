@@ -1,4 +1,4 @@
-use crate::McatError;
+use crate::{McatError, TagAttributes};
 
 use std::fs::File;
 use std::io::{self, Read};
@@ -34,7 +34,7 @@ pub fn get_primary_tag<P: AsRef<Path>>(file_path: P) -> Result<Tag, McatError> {
     }
 }
 
-pub fn blake3_file<P: AsRef<Path>>(path: P) -> io::Result<String> {
+pub fn get_file_hash<P: AsRef<Path>>(path: P) -> io::Result<String> {
     let mut file = File::open(path)?;
     let mut hasher = Hasher::new();
     let mut buf = [0u8; 8192];
