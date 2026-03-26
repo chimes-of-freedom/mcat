@@ -82,7 +82,7 @@ fn main() {
             let mut primary_tag = match common::get_primary_tag(&src_path) {
                 Ok(tag) => tag,
                 Err(e) => {
-                    eprintln!("Error: {:?}", e);
+                    eprintln!("Error: {}", e);
                     return;
                 }
             };
