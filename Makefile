@@ -1,7 +1,11 @@
 CARGO := cargo
 
-.PHONY: check
+.PHONY: check-all clippy fmt
 
-check:
+check-all: clippy fmt
+
+clippy:
 	$(CARGO) clippy --all-targets --all-features -- -D warnings
+
+fmt:
 	$(CARGO) fmt --all
