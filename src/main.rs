@@ -1,8 +1,8 @@
+use mcat::*;
+
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
-
-use mcat::{TagAttributes, utils};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -37,6 +37,10 @@ enum Commands {
         #[arg(long)]
         album: Option<String>,
 
+        /// new album artist
+        #[arg(long = "album-artist")]
+        album_artist: Option<String>,
+
         /// new genre
         #[arg(long)]
         genre: Option<String>,
@@ -52,7 +56,7 @@ fn main() {
 
     match cli.command {
         Commands::Display { path } => {
-            let primary_tag = match utils::get_primary_tag(path) {
+            let primary_tag = match common::get_primary_tag(path) {
                 Ok(tag) => tag,
                 Err(e) => {
                     eprintln!("Error: {:?}", e);
@@ -60,7 +64,7 @@ fn main() {
                 }
             };
 
-            utils::display_tag(&primary_tag);
+            display::display_tag(&primary_tag);
         }
 
         Commands::Edit {
@@ -69,9 +73,10 @@ fn main() {
             title,
             artist,
             album,
+            album_artist,
             genre,
         } => {
-            let mut primary_tag = match utils::get_primary_tag(&src_path) {
+            let mut primary_tag = match common::get_primary_tag(&src_path) {
                 Ok(tag) => tag,
                 Err(e) => {
                     eprintln!("Error: {:?}", e);
@@ -94,15 +99,16 @@ fn main() {
                 title,
                 artist,
                 album,
+                album_artist,
                 genre,
             };
-            if let Err(e) = utils::edit_tag(&output_path, &mut primary_tag, tag_attrs) {
+            if let Err(e) = edit::edit_tag(&output_path, &mut primary_tag, tag_attrs) {
                 eprintln!("Error: {:?}", e);
                 std::process::exit(1);
             }
 
             println!("Edit done.");
-            utils::display_tag(&primary_tag);
+            display::display_tag(&primary_tag);
         }
     }
 }

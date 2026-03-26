@@ -49,10 +49,11 @@ Arguments:
   <SRC>  path of music file to be edited
 
 Options:
-      --title <TITLE>    new title
-      --artist <ARTIST>  new artist
-      --album <ALBUM>    new album
-      --genre <GENRE>    new genre
-  -o, --output <DST>     path of edited music file to be saved at (default `src`)
-  -h, --help             Print help
+      --title <TITLE>                new title
+      --artist <ARTIST>              new artist
+      --album <ALBUM>                new album
+      --album-artist <ALBUM_ARTIST>  new album artist
+      --genre <GENRE>                new genre
+  -o, --output <DST>                 path of edited music file to be saved at (default `src`)
+  -h, --help                         Print help
 ```
