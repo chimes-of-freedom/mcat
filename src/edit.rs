@@ -27,8 +27,7 @@ pub fn edit_tag<P: AsRef<Path>>(
         tag.set_genre(genre);
     }
 
-    tag.save_to_path(output_path.as_ref(), WriteOptions::default())
-        .map_err(|_| McatError::WriteFailed)?;
+    tag.save_to_path(output_path.as_ref(), WriteOptions::default())?;
 
     Ok(())
 }

@@ -8,12 +8,7 @@ use blake3::Hasher;
 use lofty::{file::TaggedFile, prelude::*, probe::Probe, tag::Tag};
 
 fn get_tagged_file<P: AsRef<Path>>(file_path: P) -> Result<TaggedFile, McatError> {
-    let file_path = file_path.as_ref();
-
-    Probe::open(file_path)
-        .map_err(|_| McatError::OpenFailed)?
-        .read()
-        .map_err(|_| McatError::ReadFailed)
+    Probe::open(file_path.as_ref())?.read().map_err(Into::into)
 }
 
 pub fn get_primary_tag<P: AsRef<Path>>(file_path: P) -> Result<Tag, McatError> {

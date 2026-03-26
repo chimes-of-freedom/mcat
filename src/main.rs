@@ -59,7 +59,7 @@ fn main() {
             let primary_tag = match common::get_primary_tag(path) {
                 Ok(tag) => tag,
                 Err(e) => {
-                    eprintln!("Error: {:?}", e);
+                    eprintln!("Error: {}", e);
                     return;
                 }
             };
@@ -87,7 +87,7 @@ fn main() {
             // copy `src_path` to `dst_path` if not the same
             let output_path = if let Some(path) = dst_path {
                 if let Err(e) = std::fs::copy(&src_path, &path) {
-                    eprintln!("Failed to copy file: {:?}", e);
+                    eprintln!("Failed to copy file: {}", e);
                     std::process::exit(1);
                 }
                 path
@@ -103,7 +103,7 @@ fn main() {
                 genre,
             };
             if let Err(e) = edit::edit_tag(&output_path, &mut primary_tag, tag_attrs) {
-                eprintln!("Error: {:?}", e);
+                eprintln!("Error: {}", e);
                 std::process::exit(1);
             }
 
