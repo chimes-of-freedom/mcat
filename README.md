@@ -2,6 +2,12 @@
 
 Music Catalog（mcat）是一款音乐文件管理工具，旨在优雅地管理音乐文件及其元数据。
 
+## 项目特色
+
+- 元数据与文件分离，管理灵活；
+- 元数据数据库化，采用 TOML 存放，小巧轻便，可读性强；
+- 命令行工具，接口完备，方便批处理与日后的图形化前端开发。
+
 ## 快速开始
 
 ### 从源码构建
@@ -23,6 +29,7 @@ Usage: mcat <COMMAND>
 Commands:
   display  display the music metadata
   edit     write the music metadata
+  init     init a repository
   help     Print this message or the help of the given subcommand(s)
 
 Options:
@@ -56,4 +63,12 @@ Options:
       --genre <GENRE>                new genre
   -o, --output <DST>                 path of edited music file to be saved at (default `src`)
   -h, --help                         Print help
+
+$ mcat init --help
+init a repository
+
+Usage: mcat init
+
+Options:
+  -h, --help  Print help
 ```
