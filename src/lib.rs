@@ -1,5 +1,5 @@
 pub mod common;
-// pub mod db;
+pub mod db;
 pub mod display;
 pub mod edit;
 

@@ -1,6 +1,6 @@
-use mcat::*;
+use mcat::{db::Database, *};
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use clap::{Parser, Subcommand};
 
@@ -49,6 +49,9 @@ enum Commands {
         #[arg(long = "output", short = 'o')]
         dst: Option<PathBuf>,
     },
+
+    /// init a repository
+    Init,
 }
 
 fn main() {
@@ -109,6 +112,21 @@ fn main() {
 
             println!("Edit done.");
             display::display_tag(&primary_tag);
+        }
+
+        Commands::Init => {
+            let mut db = Database::new();
+            let media_dir = Path::new("media/");
+            
+            if let Err(e) = db.scan(media_dir) {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+
+            if let Err(e) = db.to_file("db.toml") {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
         }
     }
 }
