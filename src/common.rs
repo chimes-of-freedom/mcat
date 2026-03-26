@@ -1,4 +1,4 @@
-use crate::{McatError, TagAttributes};
+use crate::McatError;
 
 use std::fs::File;
 use std::io::{self, Read};
