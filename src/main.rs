@@ -98,14 +98,14 @@ fn main() {
                 src_path
             };
 
-            let tag_attrs = TagAttributes {
+            let tag_attr = TagAttributes {
                 title,
                 artist,
                 album,
                 album_artist,
                 genre,
             };
-            if let Err(e) = edit::edit_tag(&output_path, &mut primary_tag, tag_attrs) {
+            if let Err(e) = edit::edit_tag(&output_path, &mut primary_tag, tag_attr) {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);
             }
