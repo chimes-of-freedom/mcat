@@ -117,7 +117,7 @@ fn main() {
         Commands::Init => {
             let mut db = Database::new();
             let media_dir = Path::new("media/");
-            
+
             if let Err(e) = db.scan(media_dir) {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);

@@ -30,7 +30,7 @@ impl Database {
     }
 
     /// read from db file
-    pub fn from_file<P: AsRef<Path>>(toml_path: P) -> Result<Self, McatError> {
+    pub fn from_file(toml_path: impl AsRef<Path>) -> Result<Self, McatError> {
         let db_string = fs::read_to_string(toml_path)?;
         let db = toml::from_str(&db_string)?;
 
@@ -38,7 +38,7 @@ impl Database {
     }
 
     /// write to db file
-    pub fn to_file<P: AsRef<Path>>(&self, toml_path: P) -> Result<(), McatError> {
+    pub fn to_file(&self, toml_path: impl AsRef<Path>) -> Result<(), McatError> {
         let db_string = toml::to_string(self)?;
         fs::write(toml_path, &db_string)?;
 
@@ -46,7 +46,7 @@ impl Database {
     }
 
     /// scan media directory and init db
-    pub fn scan<P: AsRef<Path>>(&mut self, media_dir: P) -> Result<(), McatError> {
+    pub fn scan(&mut self, media_dir: impl AsRef<Path>) -> Result<(), McatError> {
         let files = fs::read_dir(media_dir)?;
 
         for file in files {

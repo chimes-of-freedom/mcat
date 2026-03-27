@@ -5,8 +5,8 @@ use std::path::Path;
 use lofty::prelude::*;
 use lofty::{config::WriteOptions, tag::Tag};
 
-pub fn edit_tag<P: AsRef<Path>>(
-    output_path: P,
+pub fn edit_tag(
+    output_path: impl AsRef<Path>,
     tag: &mut Tag,
     tag_attr: TagAttributes,
 ) -> Result<(), McatError> {

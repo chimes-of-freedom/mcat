@@ -7,11 +7,11 @@ use std::path::Path;
 use blake3::Hasher;
 use lofty::{file::TaggedFile, prelude::*, probe::Probe, tag::Tag};
 
-fn get_tagged_file<P: AsRef<Path>>(file_path: P) -> Result<TaggedFile, McatError> {
+fn get_tagged_file(file_path: impl AsRef<Path>) -> Result<TaggedFile, McatError> {
     Probe::open(file_path.as_ref())?.read().map_err(Into::into)
 }
 
-pub fn get_primary_tag<P: AsRef<Path>>(file_path: P) -> Result<Tag, McatError> {
+pub fn get_primary_tag(file_path: impl AsRef<Path>) -> Result<Tag, McatError> {
     let file_path = file_path.as_ref();
 
     if !file_path.is_file() {
@@ -29,7 +29,7 @@ pub fn get_primary_tag<P: AsRef<Path>>(file_path: P) -> Result<Tag, McatError> {
     }
 }
 
-pub fn get_file_hash<P: AsRef<Path>>(path: P) -> io::Result<String> {
+pub fn get_file_hash(path: impl AsRef<Path>) -> io::Result<String> {
     let mut file = File::open(path)?;
     let mut hasher = Hasher::new();
     let mut buf = [0u8; 8192];
