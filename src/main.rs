@@ -119,12 +119,12 @@ fn main() {
             let media_dir = Path::new("media/");
 
             if let Err(e) = db.scan(media_dir) {
-                eprintln!("Error: {}", e);
+                eprintln!("Error (in scanning): {}", e);
                 std::process::exit(1);
             }
 
-            if let Err(e) = db.to_file("db.toml") {
-                eprintln!("Error: {}", e);
+            if let Err(e) = db.to_file() {
+                eprintln!("Error (in writing): {}", e);
                 std::process::exit(1);
             }
         }

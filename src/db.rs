@@ -1,4 +1,8 @@
-use std::{collections::BTreeMap, fs, path::Path};
+use std::{
+    collections::BTreeMap,
+    fs,
+    path::{Path, PathBuf},
+};
 
 use blake3::Hasher;
 use serde::{Deserialize, Serialize};
@@ -38,9 +42,28 @@ impl Database {
     }
 
     /// write to db file
-    pub fn to_file(&self, toml_path: impl AsRef<Path>) -> Result<(), McatError> {
+    pub fn to_file(&self) -> Result<(), McatError> {
+        let toml_path = PathBuf::from(".mcat/db.toml");
+        let bak_path = PathBuf::from(".mcat/db.toml.bak");
+        let exists = toml_path.try_exists()?;
+
+        // if the original database exists, try to backup it
+        // otherwise just create `.mcat/` directory if not exists
+        if exists {
+            fs::copy(&toml_path, &bak_path)?;
+        } else {
+            let parent_path = PathBuf::from(".mcat/");
+            fs::create_dir_all(&parent_path)?;
+        }
+
+        // write to new db file
         let db_string = toml::to_string(self)?;
-        fs::write(toml_path, &db_string)?;
+        fs::write(&toml_path, &db_string)?;
+
+        // if no error occurs, remove the backup if exists
+        if exists {
+            fs::remove_file(&bak_path)?;
+        }
 
         Ok(())
     }
