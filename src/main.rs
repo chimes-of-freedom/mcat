@@ -38,7 +38,7 @@ enum Commands {
         album: Option<String>,
 
         /// new album artist
-        #[arg(long = "album-artist")]
+        #[arg(long)]
         album_artist: Option<String>,
 
         /// new genre
