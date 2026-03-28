@@ -77,10 +77,13 @@ impl Database {
             let file_type = file.file_type()?;
             let file_path = file.path();
 
-            if file_type.is_file() {
-                let file_hash = common::get_file_hash(&file_path)?;
+            if file_type.is_file() && common::is_file_supported(&file_path)? {
+                // NOTE: get the tag before stripping it from file!
                 let tag = get_primary_tag(&file_path)?;
                 let tag_attr = TagAttributes::from_tag(&tag);
+
+                common::strip_tags_from_file(&file_path)?;
+                let file_hash = common::get_file_hash(&file_path)?;
 
                 self.insert_entry(Entry {
                     file_hash,
