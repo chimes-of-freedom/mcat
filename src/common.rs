@@ -47,7 +47,7 @@ pub fn get_file_hash(path: impl AsRef<Path>) -> io::Result<String> {
 }
 
 /// strip tags from a music file
-/// 
+///
 /// usually used for a stable file hash
 pub fn strip_tags_from_file(path: impl AsRef<Path>) -> Result<(), McatError> {
     let tagged_file = get_tagged_file(&path)?;
