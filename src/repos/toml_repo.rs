@@ -1,3 +1,5 @@
+//! TOML-backed repository implementation and persistence utilities.
+
 use std::{
     collections::BTreeMap,
     fs,
@@ -7,10 +9,17 @@ use std::{
 use blake3::Hasher;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    McatError, TagAttributes,
-    common::{self, get_primary_tag},
-};
+use crate::errors::McatResult;
+use crate::models::TagAttributes;
+use crate::repos::Repository;
+
+/// An `Entry` matches a single file.
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Entry {
+    pub file_hash: String,
+
+    pub tag_attr: TagAttributes,
+}
 
 /// The databse of mcat.
 #[derive(Serialize, Deserialize, Debug)]
@@ -34,7 +43,7 @@ impl Database {
     }
 
     /// read from db file
-    pub fn from_file(toml_path: impl AsRef<Path>) -> Result<Self, McatError> {
+    pub fn from_file(toml_path: impl AsRef<Path>) -> McatResult<Self> {
         let db_string = fs::read_to_string(toml_path)?;
         let db = toml::from_str(&db_string)?;
 
@@ -42,7 +51,7 @@ impl Database {
     }
 
     /// write to db file
-    pub fn to_file(&self) -> Result<(), McatError> {
+    pub fn to_file(&self) -> McatResult<()> {
         let toml_path = PathBuf::from(".mcat/db.toml");
         let bak_path = PathBuf::from(".mcat/db.toml.bak");
         let exists = toml_path.try_exists()?;
@@ -63,33 +72,6 @@ impl Database {
         // if no error occurs, remove the backup if exists
         if exists {
             fs::remove_file(&bak_path)?;
-        }
-
-        Ok(())
-    }
-
-    /// scan media directory and init db
-    pub fn scan(&mut self, media_dir: impl AsRef<Path>) -> Result<(), McatError> {
-        let files = fs::read_dir(media_dir)?;
-
-        for file in files {
-            let file = file?;
-            let file_type = file.file_type()?;
-            let file_path = file.path();
-
-            if file_type.is_file() && common::is_file_supported(&file_path)? {
-                // NOTE: get the tag before stripping it from file!
-                let tag = get_primary_tag(&file_path)?;
-                let tag_attr = TagAttributes::from_tag(&tag);
-
-                common::strip_tags_from_file(&file_path)?;
-                let file_hash = common::get_file_hash(&file_path)?;
-
-                self.insert_entry(Entry {
-                    file_hash,
-                    tag_attr,
-                });
-            }
         }
 
         Ok(())
@@ -120,10 +102,19 @@ impl Default for Database {
     }
 }
 
-/// An `Entry` matches a single file.
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Entry {
-    file_hash: String,
+impl Repository for Database {
+    fn init_empty() -> Self {
+        Self::new()
+    }
 
-    tag_attr: TagAttributes,
+    fn insert_track(&mut self, file_hash: String, tag_attr: TagAttributes) {
+        self.insert_entry(Entry {
+            file_hash,
+            tag_attr,
+        });
+    }
+
+    fn persist(&self) -> McatResult<()> {
+        self.to_file()
+    }
 }
