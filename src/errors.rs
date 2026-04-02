@@ -8,6 +8,7 @@ use std::io;
 pub enum McatError {
     FileNotFound,
     TagNotFound,
+    TrackNotFound,
     AttrEmpty,
     Io(io::Error),
     Tag(lofty::error::LoftyError),
@@ -22,6 +23,7 @@ impl fmt::Display for McatError {
         match self {
             McatError::FileNotFound => write!(f, "file not found"),
             McatError::TagNotFound => write!(f, "no tag found in media file"),
+            McatError::TrackNotFound => write!(f, "track not found in repo's database"),
             McatError::AttrEmpty => write!(f, "no tag attributes provided"),
             McatError::Io(e) => write!(f, "I/O error: {}", e),
             McatError::Tag(e) => write!(f, "tag operation error: {}", e),

@@ -19,7 +19,7 @@ pub trait Repo {
 
     /// remove a track from the repo,
     /// returns `true` if the track exists
-    fn remove_track(&mut self, file_hash: &str) -> bool;
+    fn remove_track(&mut self, file_hash: &str) -> McatResult<()>;
 
     /// get all track hashes from the repo
     fn get_track_hashes(&self) -> BTreeSet<String>;

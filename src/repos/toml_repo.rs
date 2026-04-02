@@ -9,7 +9,7 @@ use std::{
 use blake3::Hasher;
 use serde::{Deserialize, Serialize};
 
-use crate::errors::McatResult;
+use crate::errors::{McatError, McatResult};
 use crate::models::TagAttributes;
 use crate::repos::Repo;
 
@@ -119,8 +119,12 @@ impl Repo for TomlDb {
         });
     }
 
-    fn remove_track(&mut self, file_hash: &str) -> bool {
-        self.remove_entry(file_hash).is_some()
+    fn remove_track(&mut self, file_hash: &str) -> McatResult<()> {
+        if self.remove_entry(file_hash).is_some() {
+            Ok(())
+        } else {
+            Err(McatError::TrackNotFound)
+        }
     }
 
     fn get_track_hashes(&self) -> BTreeSet<String> {

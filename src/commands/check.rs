@@ -70,7 +70,7 @@ pub fn execute(
         // delete tracks not existing under `media/`
         if !track {
             for file_hash in not_exists.as_ref().unwrap() {
-                db.remove_track(file_hash);
+                db.remove_track(file_hash)?;
             }
         }
 
