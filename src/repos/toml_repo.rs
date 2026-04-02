@@ -1,7 +1,7 @@
 //! TOML-backed repository implementation and persistence utilities.
 
 use std::{
-    collections::BTreeMap,
+    collections::{BTreeMap, BTreeSet},
     fs,
     path::{Path, PathBuf},
 };
@@ -14,7 +14,7 @@ use crate::models::TagAttributes;
 use crate::repos::Repository;
 
 /// An `Entry` matches a single file.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct Entry {
     pub file_hash: String,
 
@@ -22,7 +22,7 @@ pub struct Entry {
 }
 
 /// The databse of mcat.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct Database {
     // total hash for files
     total_hash: String,
@@ -112,6 +112,14 @@ impl Repository for Database {
             file_hash,
             tag_attr,
         });
+    }
+
+    fn get_track_hashes(&self) -> BTreeSet<String> {
+        self.entries.keys().cloned().collect()
+    }
+
+    fn from(file_path: impl AsRef<Path>) -> McatResult<Self> {
+        Self::from_file(file_path)
     }
 
     fn persist(&self) -> McatResult<()> {

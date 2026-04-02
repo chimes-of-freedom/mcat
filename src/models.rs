@@ -1,11 +1,13 @@
 //! Core domain models used across commands and services.
 
+use std::collections::BTreeSet;
+
 use lofty::prelude::*;
 use lofty::tag::Tag;
 use serde::{Deserialize, Serialize};
 
 // should sync with members in `Edit`
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct TagAttributes {
     pub title: Option<String>,
     pub artist: Option<String>,
@@ -38,4 +40,10 @@ impl TagAttributes {
             genre: tag.genre().as_deref().map(str::to_string),
         }
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct CheckResult {
+    pub not_tracked: Option<BTreeSet<String>>,
+    pub not_exists: Option<BTreeSet<String>>,
 }

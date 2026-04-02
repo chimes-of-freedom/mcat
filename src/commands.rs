@@ -19,6 +19,13 @@ pub fn run() -> McatResult<()> {
     match cli.command {
         Commands::Init => init::execute(),
 
+        Commands::Check {
+            track,
+            exist,
+            repair,
+            save_to,
+        } => check::execute(track, exist, repair, save_to),
+
         _ => todo!("This subcommand is not implemented yet."),
     }
 }

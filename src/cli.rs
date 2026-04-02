@@ -52,4 +52,24 @@ pub enum Commands {
 
     /// init a repository
     Init,
+
+    /// check if files in `media/` are tracked by the database,
+    /// or if files in the database exist in `media/`
+    Check {
+        /// only check if files in `media/` are tracked by the database
+        #[arg(group = "filter", short, long, default_value = "false")]
+        track: bool,
+
+        /// only check if files in the database exist in `media/`
+        #[arg(group = "filter", short, long, default_value = "false")]
+        exist: bool,
+
+        /// repair according to the check results
+        #[arg(short, long, default_value = "false")]
+        repair: bool,
+
+        /// save results in toml
+        #[arg(short, long)]
+        save_to: Option<PathBuf>,
+    },
 }

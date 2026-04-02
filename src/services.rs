@@ -5,10 +5,11 @@ use crate::models::TagAttributes;
 use crate::repos::Repository;
 
 use std::fs::{self, File};
-use std::io::{self, Read, Seek};
+use std::io::{self, Cursor, Read, Seek};
 use std::path::Path;
 
 use blake3::Hasher;
+use lofty::config::WriteOptions;
 use lofty::{file::TaggedFile, prelude::*, probe::Probe, tag::Tag};
 use std::fs::OpenOptions;
 
@@ -34,7 +35,7 @@ pub fn get_primary_tag(file_path: impl AsRef<Path>) -> McatResult<Tag> {
     }
 }
 
-pub fn get_file_hash(path: impl AsRef<Path>) -> io::Result<String> {
+pub fn get_hash_from_file(path: impl AsRef<Path>) -> io::Result<String> {
     let mut file = File::open(path)?;
     let mut hasher = Hasher::new();
     let mut buf = [0u8; 8192];
@@ -50,29 +51,50 @@ pub fn get_file_hash(path: impl AsRef<Path>) -> io::Result<String> {
     Ok(hasher.finalize().to_hex().to_string())
 }
 
+pub fn get_hash_from_vec(data: &[u8]) -> String {
+    let mut hasher = Hasher::new();
+
+    hasher.update(data);
+
+    hasher.finalize().to_hex().to_string()
+}
+
 /// strip tags from a music file
 ///
-/// usually used for a stable file hash
-pub fn strip_tags_from_file(path: impl AsRef<Path>) -> McatResult<()> {
-    let tagged_file = get_tagged_file(&path)?;
-    let tags = tagged_file.tags();
+/// usually used to get a stable file hash
+pub fn strip_tags_from_file(path: impl AsRef<Path>, saved: bool) -> McatResult<Option<Vec<u8>>> {
+    if saved {
+        let tagged_file = get_tagged_file(&path)?;
+        let tags = tagged_file.tags();
 
-    if tags.is_empty() {
-        return Ok(());
+        if tags.is_empty() {
+            return Ok(None);
+        }
+
+        let mut file = OpenOptions::new().read(true).write(true).open(&path)?;
+
+        // use `remove_from()` rather than
+        // `remove_from_file()` with more efficiency
+        for tag in tags {
+            tag.tag_type().remove_from(&mut file)?;
+            // `remove_from()` will fail to detect the type of the file
+            // without seeking file from the start
+            file.seek(io::SeekFrom::Start(0))?;
+        }
+
+        Ok(None)
+    } else {
+        let mut buffer = Vec::new();
+        File::open(&path)?.read_to_end(&mut buffer)?;
+        let mut cursor = Cursor::new(buffer);
+        let mut tagged_file = Probe::new(&mut cursor).guess_file_type()?.read()?;
+
+        tagged_file.clear();
+
+        tagged_file.save_to(&mut cursor, WriteOptions::default())?;
+
+        Ok(Some(cursor.into_inner()))
     }
-
-    let mut file = OpenOptions::new().read(true).write(true).open(&path)?;
-
-    // use `remove_from()` rather than
-    // `remove_from_file()` with more efficiency
-    for tag in tags {
-        tag.tag_type().remove_from(&mut file)?;
-        // `remove_from()` will fail to detect the type of the file
-        // without seeking file from the start
-        file.seek(io::SeekFrom::Start(0))?;
-    }
-
-    Ok(())
 }
 
 /// check if a file is supported by lofty
@@ -84,7 +106,11 @@ pub fn is_file_supported(path: impl AsRef<Path>) -> McatResult<bool> {
 }
 
 /// scan media directory and init db
-pub fn scan_media(repo: &mut impl Repository, media_dir: impl AsRef<Path>) -> McatResult<()> {
+pub fn scan_media(
+    repo: &mut impl Repository,
+    media_dir: impl AsRef<Path>,
+    saved: bool,
+) -> McatResult<()> {
     let files = fs::read_dir(media_dir)?;
 
     for file in files {
@@ -97,8 +123,13 @@ pub fn scan_media(repo: &mut impl Repository, media_dir: impl AsRef<Path>) -> Mc
             let tag = get_primary_tag(&file_path)?;
             let tag_attr = TagAttributes::from_tag(&tag);
 
-            strip_tags_from_file(&file_path)?;
-            let file_hash = get_file_hash(&file_path)?;
+            let file_hash = if saved {
+                strip_tags_from_file(&file_path, saved)?;
+                get_hash_from_file(&file_path)?
+            } else {
+                let stripped_data = strip_tags_from_file(&file_path, saved)?.unwrap();
+                get_hash_from_vec(&stripped_data)
+            };
 
             repo.insert_track(file_hash, tag_attr);
         }

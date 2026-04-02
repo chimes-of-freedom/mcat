@@ -8,6 +8,6 @@ use std::path::Path;
 
 pub fn execute() -> McatResult<()> {
     let mut repo = Database::init_empty();
-    scan_media(&mut repo, Path::new("media/"))?;
+    scan_media(&mut repo, Path::new("media/"), false)?;
     repo.persist()
 }
