@@ -8,9 +8,12 @@ use std::{
 
 use crate::{
     errors::McatResult,
-    models::CheckResult,
-    repos::{Repository, toml_repo::Database},
-    services::{get_hash_from_vec, is_file_supported, strip_tags_from_file},
+    models::{CheckResult, TagAttributes},
+    repos::{
+        Repository,
+        toml_repo::Database,
+    },
+    services::*,
 };
 
 pub fn execute(
@@ -19,14 +22,12 @@ pub fn execute(
     repair: bool,
     save_to: Option<impl AsRef<Path>>,
 ) -> McatResult<()> {
-    if repair {
-        todo!("Arg `--repair` is not implemented yet");
-    }
-
-    let db: Database = Repository::from(PathBuf::from(".mcat/db.toml"))?;
+    let mut db: Database = Repository::from(PathBuf::from(".mcat/db.toml"))?;
     let db_keys = db.get_track_hashes();
 
     let mut file_hashes = BTreeSet::new();
+
+    let mut files_not_tracked = Vec::new();
 
     let files = fs::read_dir("media/")?;
 
@@ -38,10 +39,12 @@ pub fn execute(
         if file_type.is_file() && is_file_supported(&file_path)? {
             let stripped_data = strip_tags_from_file(&file_path, false)?.unwrap();
             let file_hash = get_hash_from_vec(&stripped_data);
-            file_hashes.insert(file_hash);
+            file_hashes.insert(file_hash.clone());
+            files_not_tracked.push((file_path, file_hash));
         }
     }
 
+    // `None` implies a filter is applied
     let not_tracked = if !exist {
         Some(&file_hashes - &db_keys)
     } else {
@@ -52,6 +55,27 @@ pub fn execute(
     } else {
         None
     };
+
+    // apply the result to the repo
+    if repair {
+        // insert untracked tracks into repo
+        if !exist {
+            for (file_path, file_hash) in files_not_tracked {
+                let tag = get_primary_tag(&file_path)?;
+                let tag_attr = TagAttributes::from_tag(&tag);
+                db.insert_track(file_hash, tag_attr);
+            }
+        }
+
+        // delete tracks not existing under `media/`
+        if !track {
+            for file_hash in not_exists.as_ref().unwrap() {
+                db.remove_track(file_hash);
+            }
+        }
+
+        db.persist()?;
+    }
 
     // save the result to `save_path`
     if let Some(save_path) = save_to {

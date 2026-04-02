@@ -84,6 +84,11 @@ impl Database {
         self.update_hash();
     }
 
+    /// remove an entry
+    pub fn remove_entry(&mut self, key: &str) -> Option<Entry> {
+        self.entries.remove(key)
+    }
+
     /// update `total_hash` after changing `entries`
     fn update_hash(&mut self) {
         let mut hasher = Hasher::new();
@@ -112,6 +117,10 @@ impl Repository for Database {
             file_hash,
             tag_attr,
         });
+    }
+
+    fn remove_track(&mut self, file_hash: &str) -> bool {
+        self.remove_entry(file_hash).is_some()
     }
 
     fn get_track_hashes(&self) -> BTreeSet<String> {

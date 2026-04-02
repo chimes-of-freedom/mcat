@@ -14,8 +14,12 @@ pub trait Repository {
     where
         Self: Sized;
 
-    // insert a track to the repo
+    /// insert a track to the repo
     fn insert_track(&mut self, file_hash: String, tag_attr: TagAttributes);
+
+    /// remove a track from the repo,
+    /// returns `true` if the track exists
+    fn remove_track(&mut self, file_hash: &str) -> bool;
 
     /// get all track hashes from the repo
     fn get_track_hashes(&self) -> BTreeSet<String>;
