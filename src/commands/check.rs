@@ -6,7 +6,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::{
+use mcat::{
     errors::McatResult,
     models::{CheckResult, TagAttributes},
     repos::{

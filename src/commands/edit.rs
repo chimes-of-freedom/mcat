@@ -2,7 +2,7 @@
 
 use std::path::PathBuf;
 
-use crate::errors::McatResult;
+use mcat::errors::McatResult;
 
 pub fn execute(
     _src: PathBuf,

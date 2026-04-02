@@ -3,7 +3,7 @@
 use clap::Parser;
 
 use crate::cli::{Cli, Commands};
-use crate::errors::McatResult;
+use mcat::errors::McatResult;
 
 pub mod check;
 pub mod display;
