@@ -8,7 +8,7 @@ use crate::models::TagAttributes;
 
 pub mod toml_repo;
 
-pub trait Repository {
+pub trait Repo {
     /// init an empty repo
     fn init_empty() -> Self
     where

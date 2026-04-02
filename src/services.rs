@@ -2,7 +2,7 @@
 
 use crate::errors::{McatError, McatResult};
 use crate::models::TagAttributes;
-use crate::repos::Repository;
+use crate::repos::Repo;
 
 use std::fs::{self, File};
 use std::io::{self, Cursor, Read, Seek};
@@ -107,7 +107,7 @@ pub fn is_file_supported(path: impl AsRef<Path>) -> McatResult<bool> {
 
 /// scan media directory and init db
 pub fn scan_media(
-    repo: &mut impl Repository,
+    repo: &mut impl Repo,
     media_dir: impl AsRef<Path>,
     saved: bool,
 ) -> McatResult<()> {

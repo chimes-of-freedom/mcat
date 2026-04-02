@@ -10,8 +10,8 @@ use crate::{
     errors::McatResult,
     models::{CheckResult, TagAttributes},
     repos::{
-        Repository,
-        toml_repo::Database,
+        Repo,
+        toml_repo::TomlDb,
     },
     services::*,
 };
@@ -22,7 +22,7 @@ pub fn execute(
     repair: bool,
     save_to: Option<impl AsRef<Path>>,
 ) -> McatResult<()> {
-    let mut db: Database = Repository::from(PathBuf::from(".mcat/db.toml"))?;
+    let mut db: TomlDb = Repo::from(PathBuf::from(".mcat/db.toml"))?;
     let db_keys = db.get_track_hashes();
 
     let mut file_hashes = BTreeSet::new();

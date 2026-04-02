@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::errors::McatResult;
 use crate::models::TagAttributes;
-use crate::repos::Repository;
+use crate::repos::Repo;
 
 /// An `Entry` matches a single file.
 #[derive(Serialize, Deserialize)]
@@ -23,7 +23,7 @@ pub struct Entry {
 
 /// The databse of mcat.
 #[derive(Serialize, Deserialize)]
-pub struct Database {
+pub struct TomlDb {
     // total hash for files
     total_hash: String,
 
@@ -33,10 +33,10 @@ pub struct Database {
     entries: BTreeMap<String, Entry>,
 }
 
-impl Database {
+impl TomlDb {
     /// init a database
     pub fn new() -> Self {
-        Database {
+        TomlDb {
             total_hash: String::new(),
             entries: BTreeMap::new(),
         }
@@ -101,13 +101,13 @@ impl Database {
     }
 }
 
-impl Default for Database {
+impl Default for TomlDb {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl Repository for Database {
+impl Repo for TomlDb {
     fn init_empty() -> Self {
         Self::new()
     }
