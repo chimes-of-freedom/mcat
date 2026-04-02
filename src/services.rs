@@ -105,6 +105,11 @@ pub fn is_file_supported(path: impl AsRef<Path>) -> McatResult<bool> {
     }
 }
 
+/// check if a string is a valid blake3 hash
+pub fn is_valid_blake3_hex(s: &str) -> bool {
+    blake3::Hash::from_hex(s).is_ok()
+}
+
 /// scan media directory and init db
 pub fn scan_media(
     repo: &mut impl Repo,

@@ -9,10 +9,7 @@ use std::{
 use mcat::{
     errors::McatResult,
     models::{CheckResult, TagAttributes},
-    repos::{
-        Repo,
-        toml_repo::TomlDb,
-    },
+    repos::{Repo, toml_repo::TomlDb},
     services::*,
 };
 

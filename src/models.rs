@@ -7,7 +7,7 @@ use lofty::tag::Tag;
 use serde::{Deserialize, Serialize};
 
 // should sync with members in `Edit`
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct TagAttributes {
     pub title: Option<String>,
     pub artist: Option<String>,

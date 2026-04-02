@@ -72,4 +72,15 @@ pub enum Commands {
         #[arg(short, long)]
         save_to: Option<PathBuf>,
     },
+
+    /// remove a track's metadata from the repository,
+    /// along with the file if specified
+    Remove {
+        /// file hash or the track title
+        track: String,
+
+        /// remove the file
+        #[arg(short, long, default_value = "false")]
+        remove_file: bool,
+    },
 }

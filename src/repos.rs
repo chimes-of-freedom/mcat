@@ -3,6 +3,8 @@
 use std::collections::BTreeSet;
 use std::path::Path;
 
+use serde::{Deserialize, Serialize};
+
 use crate::errors::McatResult;
 use crate::models::TagAttributes;
 
@@ -21,6 +23,12 @@ pub trait Repo {
     /// returns `true` if the track exists
     fn remove_track(&mut self, file_hash: &str) -> McatResult<()>;
 
+    /// query a track using its hash
+    fn query_track_by_hash(&self, file_hash: &str) -> Option<Entry>;
+
+    /// query a track using its title
+    fn query_track_by_title(&self, title: &str) -> Option<Entry>;
+
     /// get all track hashes from the repo
     fn get_track_hashes(&self) -> BTreeSet<String>;
 
@@ -29,5 +37,14 @@ pub trait Repo {
     where
         Self: Sized;
 
-    fn persist(&self) -> McatResult<()>;
+    /// save db struct to file
+    fn persist(&mut self) -> McatResult<()>;
+}
+
+/// An `Entry` matches a single file.
+#[derive(Serialize, Deserialize, Clone)]
+pub struct Entry {
+    pub file_hash: String,
+
+    pub tag_attr: TagAttributes,
 }

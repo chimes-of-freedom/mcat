@@ -9,17 +9,12 @@ use std::{
 use blake3::Hasher;
 use serde::{Deserialize, Serialize};
 
-use crate::errors::{McatError, McatResult};
 use crate::models::TagAttributes;
 use crate::repos::Repo;
-
-/// An `Entry` matches a single file.
-#[derive(Serialize, Deserialize)]
-pub struct Entry {
-    pub file_hash: String,
-
-    pub tag_attr: TagAttributes,
-}
+use crate::{
+    errors::{McatError, McatResult},
+    repos::Entry,
+};
 
 /// The databse of mcat.
 #[derive(Serialize, Deserialize)]
@@ -81,7 +76,6 @@ impl TomlDb {
     pub fn insert_entry(&mut self, entry: Entry) {
         let key = entry.file_hash.clone();
         self.entries.insert(key, entry);
-        self.update_hash();
     }
 
     /// remove an entry
@@ -127,6 +121,17 @@ impl Repo for TomlDb {
         }
     }
 
+    fn query_track_by_hash(&self, file_hash: &str) -> Option<Entry> {
+        self.entries.get(file_hash).cloned()
+    }
+
+    fn query_track_by_title(&self, title: &str) -> Option<Entry> {
+        self.entries
+            .values()
+            .find(|entry| entry.tag_attr.title.as_deref() == Some(title))
+            .cloned()
+    }
+
     fn get_track_hashes(&self) -> BTreeSet<String> {
         self.entries.keys().cloned().collect()
     }
@@ -135,7 +140,8 @@ impl Repo for TomlDb {
         Self::from_file(file_path)
     }
 
-    fn persist(&self) -> McatResult<()> {
+    fn persist(&mut self) -> McatResult<()> {
+        self.update_hash();
         self.to_file()
     }
 }
