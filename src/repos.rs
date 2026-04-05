@@ -10,41 +10,56 @@ use crate::models::TagAttributes;
 
 pub mod toml_repo;
 
+/// Repository abstraction. Currently implemented by [`toml_repo::TomlDb`].
 pub trait Repo {
-    /// init an empty repo
+    /// Initializes an empty repository.
     fn init_empty() -> Self
     where
         Self: Sized;
 
-    /// insert a track to the repo
+    /// Inserts a track into the repository.
     fn insert_track(&mut self, file_hash: String, tag_attr: TagAttributes);
 
-    /// remove a track from the repo,
-    /// returns `true` if the track exists
+    /// Removes a track from the repository.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`crate::errors::McatError::TrackNotFound`] if the track
+    /// does not exist.
     fn remove_track(&mut self, file_hash: &str) -> McatResult<()>;
 
-    /// query a track using its hash
+    /// Queries a track by its hash.
     fn query_track_by_hash(&self, file_hash: &str) -> Option<Entry>;
 
-    /// query a track using its title
+    /// Queries a track by its title.
     fn query_track_by_title(&self, title: &str) -> Option<Entry>;
 
-    /// get all track hashes from the repo
+    /// Returns all track hashes in the repository.
     fn get_track_hashes(&self) -> BTreeSet<String>;
 
-    /// get all `TagAttributes` of tracks from the repo
+    /// Returns tag attributes for all tracks.
     fn get_tag_attrs(&self) -> Vec<&TagAttributes>;
 
-    /// read repo from a file
+    /// Loads a repository from a file.
+    ///
+    /// # Errors
+    ///
+    /// Returns I/O or TOML deserialization related errors while
+    /// opening the file or deserializing its content.
     fn from(file_path: impl AsRef<Path>) -> McatResult<Self>
     where
         Self: Sized;
 
-    /// save db struct to file
+    /// Persists the repository to its backing file.
+    ///
+    /// # Errors
+    ///
+    /// Returns I/O or serialization related errors while writing
+    /// repository data to disk.
     fn persist(&mut self) -> McatResult<()>;
 }
 
-/// An `Entry` matches a single file.
+/// An [`Entry`] records a file's BLAKE3 hash and its metadata.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Entry {
     pub file_hash: String,
