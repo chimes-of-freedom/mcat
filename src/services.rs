@@ -1,4 +1,4 @@
-//! Reusable service-layer operations for media and metadata workflows.
+//! Reusable service-layer utilities for media and metadata workflows.
 
 use crate::errors::{McatError, McatResult};
 use crate::models::TagAttributes;
@@ -13,10 +13,19 @@ use lofty::config::WriteOptions;
 use lofty::{file::TaggedFile, prelude::*, probe::Probe, tag::Tag};
 use std::fs::OpenOptions;
 
+/// Loads a `TaggedFile` from the given path.
 fn get_tagged_file(file_path: impl AsRef<Path>) -> McatResult<TaggedFile> {
     Probe::open(file_path.as_ref())?.read().map_err(Into::into)
 }
 
+/// Returns the primary tag from a file, or its first tag
+/// if a primary tag doesn't exist.
+///
+/// # Errors
+///
+/// - Returns [`McatError::FileNotFound`] if `file_path` does not exist or is
+///   not a regular file.
+/// - Returns [`McatError::TagNotFound`] if the file does not contain any tag.
 pub fn get_primary_tag(file_path: impl AsRef<Path>) -> McatResult<Tag> {
     let file_path = file_path.as_ref();
 
@@ -35,6 +44,11 @@ pub fn get_primary_tag(file_path: impl AsRef<Path>) -> McatResult<Tag> {
     }
 }
 
+/// Calculates the BLAKE3 hash of a file.
+///
+/// # Errors
+///
+/// Returns any I/O error raised while opening or reading the file.
 pub fn get_hash_from_file(path: impl AsRef<Path>) -> io::Result<String> {
     let mut file = File::open(path)?;
     let mut hasher = Hasher::new();
@@ -51,6 +65,7 @@ pub fn get_hash_from_file(path: impl AsRef<Path>) -> io::Result<String> {
     Ok(hasher.finalize().to_hex().to_string())
 }
 
+/// Calculates the BLAKE3 hash of a byte slice.
 pub fn get_hash_from_vec(data: &[u8]) -> String {
     let mut hasher = Hasher::new();
 
@@ -59,9 +74,19 @@ pub fn get_hash_from_vec(data: &[u8]) -> String {
     hasher.finalize().to_hex().to_string()
 }
 
-/// strip tags from a music file
+/// Removes tags from a file. When `saved` is `true`, writes the changes back
+/// to the file; otherwise, returns the stripped file data.
 ///
-/// usually used to get a stable file hash
+/// This is commonly used to compute a stable file hash.
+///
+/// # Errors
+///
+/// - Returns [`McatError::FileNotFound`] when `path` does not exist or is not a
+///   regular file.
+/// - Returns [`McatError::TagNotFound`] when the file does not contain any
+///   readable tag.
+/// - Returns a file-system or metadata error when the file cannot be opened,
+///   read, seeked, stripped, or written back.
 pub fn strip_tags_from_file(path: impl AsRef<Path>, saved: bool) -> McatResult<Option<Vec<u8>>> {
     if saved {
         let tagged_file = get_tagged_file(&path)?;
@@ -97,7 +122,12 @@ pub fn strip_tags_from_file(path: impl AsRef<Path>, saved: bool) -> McatResult<O
     }
 }
 
-/// check if a file is supported by lofty
+/// Returns whether `lofty` can recognize the file format.
+///
+/// # Errors
+///
+/// Probe failures are treated as `Ok(false)`, so this function does not
+/// return an error.
 pub fn is_file_supported(path: impl AsRef<Path>) -> McatResult<bool> {
     match Probe::open(&path)?.guess_file_type() {
         Ok(_) => Ok(true),
@@ -105,12 +135,21 @@ pub fn is_file_supported(path: impl AsRef<Path>) -> McatResult<bool> {
     }
 }
 
-/// check if a string is a valid blake3 hash
+/// Returns whether `s` is a valid BLAKE3 hash.
 pub fn is_valid_blake3_hex(s: &str) -> bool {
     blake3::Hash::from_hex(s).is_ok()
 }
 
-/// scan media directory and init db
+/// Scans a media directory and inserts supported files into the repository.
+///
+/// # Errors
+///
+/// - Returns a file-system error when `media_dir` cannot be read as a
+///   directory.
+/// - Returns [`McatError::TagNotFound`] when a supported media file does not
+///   contain any readable tag.
+/// - Returns a file-system or metadata error when reading directory entries,
+///   probing files, stripping tags, or hashing file contents fails.
 pub fn scan_media(
     repo: &mut impl Repo,
     media_dir: impl AsRef<Path>,
