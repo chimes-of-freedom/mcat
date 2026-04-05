@@ -26,7 +26,7 @@ pub fn run() -> McatResult<()> {
             save_to,
         } => check::execute(track, exist, repair, save_to),
 
-        Commands::Remove { track, remove_file } => remove::execute(track, remove_file),
+        Commands::Remove { track, remove_file } => remove::execute(&track, remove_file),
 
         Commands::Display => display::execute(),
 

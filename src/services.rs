@@ -175,7 +175,7 @@ pub fn scan_media(
                 get_hash_from_vec(&stripped_data)
             };
 
-            repo.insert_track(&file_hash, tag_attr);
+            repo.insert_track(file_hash, tag_attr);
         }
     }
 

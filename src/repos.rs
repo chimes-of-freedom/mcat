@@ -17,7 +17,7 @@ pub trait Repo {
         Self: Sized;
 
     /// insert a track to the repo
-    fn insert_track(&mut self, file_hash: &str, tag_attr: TagAttributes);
+    fn insert_track(&mut self, file_hash: String, tag_attr: TagAttributes);
 
     /// remove a track from the repo,
     /// returns `true` if the track exists

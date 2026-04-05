@@ -6,15 +6,15 @@ use mcat::{
     services::is_valid_blake3_hex,
 };
 
-pub fn execute(track: String, remove_file: bool) -> McatResult<()> {
+pub fn execute(track: &str, remove_file: bool) -> McatResult<()> {
     if remove_file {
         todo!("crate::commands::remove::execute(): `--remove-file` not implemented yet");
     }
 
     let mut db: TomlDb = Repo::from(".mcat/db.toml")?;
 
-    let entry = if is_valid_blake3_hex(&track) {
-        db.query_track_by_hash(&track)
+    let entry = if is_valid_blake3_hex(track) {
+        db.query_track_by_hash(track)
     } else {
         db.query_track_by_title(&track)
     };
