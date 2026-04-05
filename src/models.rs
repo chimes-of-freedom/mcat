@@ -7,22 +7,28 @@ use lofty::tag::Tag;
 use serde::{Deserialize, Serialize};
 use tabled::Tabled;
 
-// should sync with members in `Edit`
+/// Metadata fields extracted from a media file tag.
 #[derive(Serialize, Deserialize, Clone, Tabled)]
 #[tabled(display(Option, "tabled::derive::display::option", ""))]
 pub struct TagAttributes {
+    /// Track title.
     pub title: Option<String>,
 
+    /// Track artist.
     pub artist: Option<String>,
 
+    /// Album title.
     pub album: Option<String>,
 
+    /// Album artist.
     pub album_artist: Option<String>,
 
+    /// Genre.
     pub genre: Option<String>,
 }
 
 impl TagAttributes {
+    /// Returns `true` when all tag fields are absent.
     pub fn is_empty(&self) -> bool {
         matches!(
             self,
@@ -36,7 +42,7 @@ impl TagAttributes {
         )
     }
 
-    /// parse `Tag` to `TagAttributes`
+    /// Builds [`TagAttributes`] from a [`Tag`].
     pub fn from_tag(tag: &Tag) -> TagAttributes {
         TagAttributes {
             title: tag.title().as_deref().map(str::to_string),
@@ -48,8 +54,12 @@ impl TagAttributes {
     }
 }
 
+/// Result of consistency checks between media files and repository records.
 #[derive(Serialize, Deserialize)]
 pub struct CheckResult {
+    /// Hashes found in media files but not tracked in the repository.
     pub not_tracked: Option<BTreeSet<String>>,
+
+    /// Hashes tracked in the repository but missing from the media directory.
     pub not_exists: Option<BTreeSet<String>>,
 }

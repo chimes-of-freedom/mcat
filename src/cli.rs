@@ -4,79 +4,79 @@ use clap::{Parser, Subcommand};
 
 use std::path::PathBuf;
 
+/// Top-level CLI parser for mcat.
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 pub struct Cli {
-    /// action
+    /// Selected subcommand action.
     #[command(subcommand)]
     pub command: Commands,
 }
 
+/// Supported mcat subcommands.
 #[derive(Subcommand)]
 pub enum Commands {
-    /// display the music metadata
+    /// Displays music metadata stored in the repository.
     Display,
 
-    /// write the music metadata
+    /// Edits metadata for a music file.
     Edit {
-        /// path of music file to be edited
+        /// Path to the music file to edit.
         src: PathBuf,
 
-        /// new title
+        /// New title.
         #[arg(long)]
         title: Option<String>,
 
-        /// new artist
+        /// New artist.
         #[arg(long)]
         artist: Option<String>,
 
-        /// new album
+        /// New album.
         #[arg(long)]
         album: Option<String>,
 
-        /// new album artist
+        /// New album artist.
         #[arg(long)]
         album_artist: Option<String>,
 
-        /// new genre
+        /// New genre.
         #[arg(long)]
         genre: Option<String>,
 
-        /// path of edited music file to be saved at (default `src`)
+        /// Output path for the edited file (defaults to `src`).
         #[arg(long = "output", short = 'o')]
         dst: Option<PathBuf>,
     },
 
-    /// init a repository
+    /// Initializes a repository from files under `media/`.
     Init,
 
-    /// check if files in `media/` are tracked by the database,
-    /// or if files in the database exist in `media/`
+    /// Checks consistency between files under `media/` and repository records.
     Check {
-        /// only check if files in `media/` are tracked by the database
+        /// Checks only whether files under `media/` are tracked.
         #[arg(group = "filter", short, long, default_value = "false")]
         track: bool,
 
-        /// only check if files in the database exist in `media/`
+        /// Checks only whether tracked files still exist under `media/`.
         #[arg(group = "filter", short, long, default_value = "false")]
         exist: bool,
 
-        /// repair according to the check results
+        /// Repairs repository state according to check results.
         #[arg(short, long, default_value = "false")]
         repair: bool,
 
-        /// save results in toml
+        /// Saves check results as TOML.
         #[arg(short, long)]
         save_to: Option<PathBuf>,
     },
 
-    /// remove a track's metadata from the repository,
-    /// along with the file if specified
+    /// Removes a track from the repository, optionally removing the file.
     Remove {
-        /// file hash or the track title
+        /// File hash or track title.
         track: String,
 
-        /// remove the file
+        /// Removes the media file as well.
         #[arg(short, long, default_value = "false")]
         remove_file: bool,
     },

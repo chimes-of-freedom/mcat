@@ -16,20 +16,19 @@ use crate::{
     repos::Entry,
 };
 
-/// The databse of mcat.
+/// TOML-backed repository database used by mcat.
 #[derive(Serialize, Deserialize)]
 pub struct TomlDb {
-    // total hash for files
+    // Aggregate hash computed from sorted entry keys.
     total_hash: String,
 
-    // use file hash as key
-    // `BTreeMap` ensures entries are sorted by key,
-    // which makes the total hash deterministic
+    // Uses file hash as key.
+    // `BTreeMap` keeps keys sorted, making the aggregate hash deterministic.
     entries: BTreeMap<String, Entry>,
 }
 
 impl TomlDb {
-    /// init a database
+    /// Creates an empty database.
     pub fn new() -> Self {
         TomlDb {
             total_hash: String::new(),
@@ -37,7 +36,12 @@ impl TomlDb {
         }
     }
 
-    /// read from db file
+    /// Loads a database from a TOML file.
+    ///
+    /// # Errors
+    ///
+    /// Returns I/O errors when reading the file and TOML deserialization
+    /// errors when parsing content.
     pub fn from_file(toml_path: impl AsRef<Path>) -> McatResult<Self> {
         let db_string = fs::read_to_string(toml_path)?;
         let db = toml::from_str(&db_string)?;
@@ -45,7 +49,12 @@ impl TomlDb {
         Ok(db)
     }
 
-    /// write to db file
+    /// Writes the database to `.mcat/db.toml` with a temporary backup.
+    ///
+    /// # Errors
+    ///
+    /// Returns I/O and TOML serialization errors raised during backup, file
+    /// creation, writing, or cleanup.
     pub fn to_file(&self) -> McatResult<()> {
         let toml_path = PathBuf::from(".mcat/db.toml");
         let bak_path = PathBuf::from(".mcat/db.toml.bak");
@@ -72,18 +81,18 @@ impl TomlDb {
         Ok(())
     }
 
-    /// insert an entry
+    /// Inserts an entry into the database.
     pub fn insert_entry(&mut self, entry: Entry) {
         let key = entry.file_hash.clone();
         self.entries.insert(key, entry);
     }
 
-    /// remove an entry
+    /// Removes an entry by key.
     pub fn remove_entry(&mut self, key: &str) -> Option<Entry> {
         self.entries.remove(key)
     }
 
-    /// update `total_hash` after changing `entries`
+    /// Recomputes `total_hash` from current entry keys.
     fn update_hash(&mut self) {
         let mut hasher = Hasher::new();
 

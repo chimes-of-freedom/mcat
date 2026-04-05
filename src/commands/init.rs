@@ -6,6 +6,12 @@ use mcat::services::scan_media;
 
 use std::path::Path;
 
+/// Executes the `init` command.
+///
+/// # Errors
+///
+/// Returns repository persistence errors or scan failures while reading files
+/// under `media/`.
 pub fn execute() -> McatResult<()> {
     let mut repo: TomlDb = Repo::init_empty();
     scan_media(&mut repo, Path::new("media/"), false)?;

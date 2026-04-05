@@ -13,6 +13,12 @@ use mcat::{
     services::*,
 };
 
+/// Executes the `check` command.
+///
+/// # Errors
+///
+/// Returns file-system, repository, metadata, serialization, or hashing errors
+/// encountered during scanning, optional repair, or optional result export.
 pub fn execute(
     track: bool,
     exist: bool,

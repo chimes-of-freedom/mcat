@@ -6,6 +6,11 @@ use mcat::{
     repos::{Repo, toml_repo::TomlDb},
 };
 
+/// Executes the `display` command.
+///
+/// # Errors
+///
+/// Returns repository loading errors.
 pub fn execute() -> McatResult<()> {
     let db: TomlDb = Repo::from(".mcat/db.toml")?;
 

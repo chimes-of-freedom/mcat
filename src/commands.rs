@@ -13,6 +13,11 @@ pub mod import;
 pub mod init;
 pub mod remove;
 
+/// Parses CLI arguments and dispatches to the selected subcommand handler.
+///
+/// # Errors
+///
+/// Returns any error produced by the selected command execution.
 pub fn run() -> McatResult<()> {
     let cli = Cli::parse();
 

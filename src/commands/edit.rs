@@ -4,6 +4,11 @@ use std::path::PathBuf;
 
 use mcat::errors::McatResult;
 
+/// Executes the `edit` command.
+///
+/// # Errors
+///
+/// This command is currently unimplemented and always panics via `todo!`.
 pub fn execute(
     _src: PathBuf,
     _title: Option<String>,

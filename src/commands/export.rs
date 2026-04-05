@@ -2,6 +2,11 @@
 
 use mcat::errors::McatResult;
 
+/// Executes the `export` command.
+///
+/// # Errors
+///
+/// This command is currently unimplemented and always panics via `todo!`.
 pub fn execute() -> McatResult<()> {
     todo!("export command is not implemented yet")
 }

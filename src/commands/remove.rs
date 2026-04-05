@@ -6,6 +6,11 @@ use mcat::{
     services::is_valid_blake3_hex,
 };
 
+/// Executes the `remove` command.
+///
+/// # Errors
+///
+/// Returns repository loading, lookup, removal, or persistence errors.
 pub fn execute(track: &str, remove_file: bool) -> McatResult<()> {
     if remove_file {
         todo!("crate::commands::remove::execute(): `--remove-file` not implemented yet");
