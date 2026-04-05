@@ -5,14 +5,20 @@ use std::collections::BTreeSet;
 use lofty::prelude::*;
 use lofty::tag::Tag;
 use serde::{Deserialize, Serialize};
+use tabled::Tabled;
 
 // should sync with members in `Edit`
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Tabled)]
+#[tabled(display(Option, "tabled::derive::display::option", ""))]
 pub struct TagAttributes {
     pub title: Option<String>,
+
     pub artist: Option<String>,
+
     pub album: Option<String>,
+
     pub album_artist: Option<String>,
+
     pub genre: Option<String>,
 }
 

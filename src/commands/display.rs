@@ -1,9 +1,17 @@
 //! `display` command handler for querying and showing track metadata.
 
-use std::path::PathBuf;
+use mcat::{
+    errors::McatResult,
+    output::display_tag_attrs,
+    repos::{Repo, toml_repo::TomlDb},
+};
 
-use mcat::errors::McatResult;
+pub fn execute() -> McatResult<()> {
+    let db: TomlDb = Repo::from(".mcat/db.toml")?;
 
-pub fn execute(_path: PathBuf) -> McatResult<()> {
-    todo!("display command is not implemented yet")
+    let tag_attrs = db.get_tag_attrs();
+
+    display_tag_attrs(&tag_attrs);
+
+    Ok(())
 }

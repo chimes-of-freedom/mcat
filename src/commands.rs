@@ -28,6 +28,8 @@ pub fn run() -> McatResult<()> {
 
         Commands::Remove { track, remove_file } => remove::execute(track, remove_file),
 
+        Commands::Display => display::execute(),
+
         _ => todo!("This subcommand is not implemented yet."),
     }
 }

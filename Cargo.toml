@@ -11,4 +11,5 @@ blake3 = "1.8.3"
 clap = { version = "4.5.60", features = ["derive"] }
 lofty = "0.23.2"
 serde = { version = "1.0.228", features = ["derive"] }
+tabled = "0.20.0"
 toml = "1.1.0"

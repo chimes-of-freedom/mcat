@@ -32,6 +32,9 @@ pub trait Repo {
     /// get all track hashes from the repo
     fn get_track_hashes(&self) -> BTreeSet<String>;
 
+    /// get all `TagAttributes` of tracks from the repo
+    fn get_tag_attrs(&self) -> Vec<&TagAttributes>;
+
     /// read repo from a file
     fn from(file_path: impl AsRef<Path>) -> McatResult<Self>
     where

@@ -136,6 +136,10 @@ impl Repo for TomlDb {
         self.entries.keys().cloned().collect()
     }
 
+    fn get_tag_attrs(&self) -> Vec<&TagAttributes> {
+        self.entries.values().map(|entry| &entry.tag_attr).collect()
+    }
+
     fn from(file_path: impl AsRef<Path>) -> McatResult<Self> {
         Self::from_file(file_path)
     }

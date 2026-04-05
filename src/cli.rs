@@ -15,10 +15,7 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     /// display the music metadata
-    Display {
-        /// path of music file to display
-        path: PathBuf,
-    },
+    Display,
 
     /// write the music metadata
     Edit {
