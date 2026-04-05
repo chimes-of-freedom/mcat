@@ -2,8 +2,8 @@
 
 use std::collections::BTreeSet;
 
-use lofty::prelude::*;
 use lofty::tag::Tag;
+use lofty::{picture::PictureType, prelude::*};
 use serde::{Deserialize, Serialize};
 use tabled::Tabled;
 
@@ -25,6 +25,18 @@ pub struct TagAttributes {
 
     /// Genre.
     pub genre: Option<String>,
+
+    /// Front Cover.
+    #[tabled(skip)]
+    pub front_cover: Option<Image>,
+}
+
+/// Image fields extracted from a media file tag.
+#[derive(Serialize, Deserialize, Clone)]
+pub struct Image {
+    pub bytes: Vec<u8>,
+    pub mime_type: Option<String>,
+    pub description: Option<String>,
 }
 
 impl TagAttributes {
@@ -38,18 +50,28 @@ impl TagAttributes {
                 album: None,
                 album_artist: None,
                 genre: None,
+                front_cover: None,
             }
         )
     }
 
     /// Builds [`TagAttributes`] from a [`Tag`].
     pub fn from_tag(tag: &Tag) -> TagAttributes {
+        let front_cover = tag
+            .get_picture_type(PictureType::CoverFront)
+            .map(|cover| Image {
+                bytes: cover.data().to_vec(),
+                mime_type: cover.mime_type().map(|m| m.to_string()),
+                description: cover.description().map(|s| s.to_string()),
+            });
+
         TagAttributes {
             title: tag.title().as_deref().map(str::to_string),
             artist: tag.artist().as_deref().map(str::to_string),
             album: tag.album().as_deref().map(str::to_string),
             album_artist: tag.get_string(ItemKey::AlbumArtist).map(str::to_string),
             genre: tag.genre().as_deref().map(str::to_string),
+            front_cover,
         }
     }
 }
