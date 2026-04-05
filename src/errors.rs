@@ -10,6 +10,7 @@ pub enum McatError {
     TagNotFound,
     TrackNotFound,
     AttrEmpty,
+
     Io(io::Error),
     Tag(lofty::error::LoftyError),
     TomlDe(toml::de::Error),

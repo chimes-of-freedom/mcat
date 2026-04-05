@@ -48,8 +48,8 @@ pub fn get_primary_tag(file_path: impl AsRef<Path>) -> McatResult<Tag> {
 ///
 /// # Errors
 ///
-/// Returns any I/O error raised while opening or reading the file.
-pub fn get_hash_from_file(path: impl AsRef<Path>) -> io::Result<String> {
+/// Returns [`McatError::Io`] raised while opening or reading the file.
+pub fn get_hash_from_file(path: impl AsRef<Path>) -> McatResult<String> {
     let mut file = File::open(path)?;
     let mut hasher = Hasher::new();
     let mut buf = [0u8; 8192];
@@ -126,8 +126,8 @@ pub fn strip_tags_from_file(path: impl AsRef<Path>, saved: bool) -> McatResult<O
 ///
 /// # Errors
 ///
-/// Probe failures are treated as `Ok(false)`, so this function does not
-/// return an error.
+/// Probe failures are treated as `Ok(false)`, so this function returns
+/// an error only if [`Probe::open`] fails.
 pub fn is_file_supported(path: impl AsRef<Path>) -> McatResult<bool> {
     match Probe::open(&path)?.guess_file_type() {
         Ok(_) => Ok(true),
