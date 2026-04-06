@@ -10,7 +10,7 @@ use blake3::Hasher;
 use serde::{Deserialize, Serialize};
 
 use crate::repos::Repo;
-use crate::{config, models::TagAttributes};
+use crate::{config, models::*};
 use crate::{
     errors::{McatError, McatResult},
     repos::Entry,
@@ -81,7 +81,7 @@ impl TomlDb {
         Ok(())
     }
 
-    /// Inserts an entry into the database.
+    /// Inserts an entry into the repository.
     pub fn insert_entry(&mut self, entry: Entry) {
         let key = entry.file_hash.clone();
         self.entries.insert(key, entry);

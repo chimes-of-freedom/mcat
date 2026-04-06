@@ -1,7 +1,8 @@
 //! Reusable service-layer utilities for media and metadata workflows.
 
+use crate::config;
 use crate::errors::{McatError, McatResult};
-use crate::models::TagAttributes;
+use crate::models::{ImageData, TagAttributes};
 use crate::repos::Repo;
 
 use std::fs::{self, File};
@@ -157,6 +158,15 @@ pub fn scan_media(
 ) -> McatResult<()> {
     let files = fs::read_dir(media_dir)?;
 
+    // Create cover directory if not exists
+    let cover_dir = config::cover_dir_path();
+    if cover_dir.exists() && !cover_dir.is_dir() {
+        fs::remove_file(&cover_dir)?;
+    }
+    if !cover_dir.exists() {
+        fs::create_dir_all(&cover_dir)?;
+    }
+
     for file in files {
         let file = file?;
         let file_type = file.file_type()?;
@@ -165,7 +175,7 @@ pub fn scan_media(
         if file_type.is_file() && is_file_supported(&file_path)? {
             // NOTE: get the tag before stripping it from file!
             let tag = get_primary_tag(&file_path)?;
-            let tag_attr = TagAttributes::from_tag(&tag);
+            let mut tag_attr = TagAttributes::from_tag(&tag);
 
             let file_hash = if saved {
                 strip_tags_from_file(&file_path, saved)?;
@@ -174,6 +184,31 @@ pub fn scan_media(
                 let stripped_data = strip_tags_from_file(&file_path, saved)?.unwrap();
                 get_hash_from_vec(&stripped_data)
             };
+
+            // NOTE: parse `ImageData::Inline` to `ImageData::Linked` before inserting
+            // a track!
+            if let Some(image) = tag_attr.front_cover.take() {
+                if let ImageData::Inline(data) = &image.data {
+                    // Extract extension from mime type (e.g., "image/jpeg" -> "jpeg")
+                    let ext = image
+                        .mime_type
+                        .as_deref()
+                        .and_then(|m| m.split('/').next_back())
+                        .unwrap_or("bin");
+
+                    let file_name = format!("{}.{}", file_hash, ext);
+                    let mut image_path = config::cover_dir_path();
+                    image_path.push(&file_name);
+
+                    // Write image data back to disk
+                    fs::write(&image_path, data)?;
+
+                    // Update tag_attr with the linked version
+                    tag_attr.front_cover = Some(image.into_linked(file_name));
+                } else {
+                    tag_attr.front_cover = Some(image);
+                }
+            }
 
             repo.insert_track(file_hash, tag_attr);
         }

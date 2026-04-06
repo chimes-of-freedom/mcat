@@ -31,14 +31,6 @@ pub struct TagAttributes {
     pub front_cover: Option<Image>,
 }
 
-/// Image fields extracted from a media file tag.
-#[derive(Serialize, Deserialize, Clone)]
-pub struct Image {
-    pub bytes: Vec<u8>,
-    pub mime_type: Option<String>,
-    pub description: Option<String>,
-}
-
 impl TagAttributes {
     /// Returns `true` when all tag fields are absent.
     pub fn is_empty(&self) -> bool {
@@ -60,9 +52,9 @@ impl TagAttributes {
         let front_cover = tag
             .get_picture_type(PictureType::CoverFront)
             .map(|cover| Image {
-                bytes: cover.data().to_vec(),
                 mime_type: cover.mime_type().map(|m| m.to_string()),
                 description: cover.description().map(|s| s.to_string()),
+                data: ImageData::Inline(cover.data().to_vec()),
             });
 
         TagAttributes {
@@ -72,6 +64,44 @@ impl TagAttributes {
             album_artist: tag.get_string(ItemKey::AlbumArtist).map(str::to_string),
             genre: tag.genre().as_deref().map(str::to_string),
             front_cover,
+        }
+    }
+}
+
+/// Image fields extracted from a media file tag. [`Image::Inline`] represents
+/// the full image while [`Image::Linked`] represents a link to file on disk.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Image {
+    pub mime_type: Option<String>,
+    pub description: Option<String>,
+    #[serde(flatten)]
+    pub data: ImageData,
+}
+
+// Enum for image payload
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ImageData {
+    /// Inline data.
+    #[serde(skip)]
+    Inline(Vec<u8>),
+
+    /// External file name.
+    Linked { file_name: String },
+}
+
+impl Image {
+    pub fn into_inline(self, data: Vec<u8>) -> Self {
+        Self {
+            data: ImageData::Inline(data),
+            ..self
+        }
+    }
+
+    pub fn into_linked(self, file_name: String) -> Self {
+        Self {
+            data: ImageData::Linked { file_name },
+            ..self
         }
     }
 }
