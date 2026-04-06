@@ -9,8 +9,8 @@ use std::{
 use blake3::Hasher;
 use serde::{Deserialize, Serialize};
 
-use crate::models::TagAttributes;
 use crate::repos::Repo;
+use crate::{config, models::TagAttributes};
 use crate::{
     errors::{McatError, McatResult},
     repos::Entry,
@@ -49,15 +49,15 @@ impl TomlDb {
         Ok(db)
     }
 
-    /// Writes the database to `.mcat/db.toml` with a temporary backup.
+    /// Writes the database to [`config::repo_file_path`] with a temporary backup.
     ///
     /// # Errors
     ///
     /// Returns I/O and TOML serialization errors raised during backup, file
     /// creation, writing, or cleanup.
     pub fn to_file(&self) -> McatResult<()> {
-        let toml_path = PathBuf::from(".mcat/db.toml");
-        let bak_path = PathBuf::from(".mcat/db.toml.bak");
+        let toml_path = config::repo_file_path();
+        let bak_path = config::repo_backup_file_path();
         let exists = toml_path.try_exists()?;
 
         // if the original database exists, try to backup it

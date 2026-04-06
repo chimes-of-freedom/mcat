@@ -1,10 +1,9 @@
 //! `init` command handler for initializing repository metadata state.
 
+use mcat::config;
 use mcat::errors::McatResult;
 use mcat::repos::{Repo, toml_repo::TomlDb};
 use mcat::services::scan_media;
-
-use std::path::Path;
 
 /// Executes the `init` command.
 ///
@@ -14,6 +13,6 @@ use std::path::Path;
 /// under `media/`.
 pub fn execute() -> McatResult<()> {
     let mut repo: TomlDb = Repo::init_empty();
-    scan_media(&mut repo, Path::new("media/"), false)?;
+    scan_media(&mut repo, config::media_dir_path(), false)?;
     repo.persist()
 }

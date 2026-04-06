@@ -1,12 +1,9 @@
 //! `check` command handler for validating repository and media consistency.
 
-use std::{
-    collections::BTreeSet,
-    fs,
-    path::{Path, PathBuf},
-};
+use std::{collections::BTreeSet, fs, path::Path};
 
 use mcat::{
+    config,
     errors::McatResult,
     models::{CheckResult, TagAttributes},
     repos::{Repo, toml_repo::TomlDb},
@@ -25,14 +22,14 @@ pub fn execute(
     repair: bool,
     save_to: Option<impl AsRef<Path>>,
 ) -> McatResult<()> {
-    let mut db: TomlDb = Repo::from(PathBuf::from(".mcat/db.toml"))?;
+    let mut db: TomlDb = Repo::from(config::repo_file_path())?;
     let db_keys = db.get_track_hashes();
 
     let mut file_hashes = BTreeSet::new();
 
     let mut files_not_tracked = Vec::new();
 
-    let files = fs::read_dir("media/")?;
+    let files = fs::read_dir(config::media_dir_path())?;
 
     for file in files {
         let file = file?;
