@@ -9,7 +9,7 @@ use mcat::errors::McatResult;
 /// # Errors
 ///
 /// This command is currently unimplemented and always panics via `todo!`.
-pub fn execute(
+pub fn _execute(
     _src: PathBuf,
     _title: Option<String>,
     _artist: Option<String>,

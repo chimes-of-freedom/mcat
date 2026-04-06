@@ -7,6 +7,6 @@ use mcat::errors::McatResult;
 /// # Errors
 ///
 /// This command is currently unimplemented and always panics via `todo!`.
-pub fn execute() -> McatResult<()> {
+pub fn _execute() -> McatResult<()> {
     todo!("import command is not implemented yet")
 }
