@@ -31,7 +31,23 @@ pub fn run() -> McatResult<()> {
             save_to,
         } => check::execute(track, exist, repair, save_to),
 
-        Commands::Remove { track, remove_file } => remove::execute(&track, remove_file),
+        Commands::Remove {
+            titles,
+            artists,
+            albums,
+            album_artists,
+            genres,
+            hashes,
+            remove_file,
+        } => remove::execute(
+            titles,
+            artists,
+            albums,
+            album_artists,
+            genres,
+            hashes,
+            remove_file,
+        ),
 
         Commands::Display => display::execute(),
 

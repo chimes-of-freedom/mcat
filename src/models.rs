@@ -7,8 +7,7 @@ use lofty::{picture::PictureType, prelude::*};
 use serde::{Deserialize, Serialize};
 use tabled::Tabled;
 
-use crate::config;
-use crate::errors::McatResult;
+use crate::{config, errors::McatResult, repos::Repo};
 
 /// Metadata fields extracted from a media file tag.
 #[derive(Serialize, Deserialize, Clone, Tabled)]
@@ -136,6 +135,65 @@ impl Image {
             }
             _ => Ok(self),
         }
+    }
+}
+
+/// Filter for querying track metadata.
+/// Fields logically ORed within the same field and ANDed across different
+/// fields. For example, `artist: [A, B], genre: [X, Y]` matches tracks with
+/// `(artist == A OR artist == B) AND (genre == X OR genre == Y)`.
+#[derive(Serialize, Deserialize)]
+pub struct TrackFilter {
+    pub titles: BTreeSet<String>,
+    pub artists: BTreeSet<String>,
+    pub albums: BTreeSet<String>,
+    pub album_artists: BTreeSet<String>,
+    pub genres: BTreeSet<String>,
+
+    pub hashes: BTreeSet<String>,
+}
+
+impl TrackFilter {
+    pub fn new(
+        titles: Vec<String>,
+        artists: Vec<String>,
+        albums: Vec<String>,
+        album_artists: Vec<String>,
+        genres: Vec<String>,
+        hashes: Vec<String>,
+    ) -> Self {
+        TrackFilter {
+            titles: titles.into_iter().collect(),
+            artists: artists.into_iter().collect(),
+            albums: albums.into_iter().collect(),
+            album_artists: album_artists.into_iter().collect(),
+            genres: genres.into_iter().collect(),
+            hashes: hashes.into_iter().collect(),
+        }
+    }
+
+    /// Applies the filter to the repository, returning hashes of matching
+    /// tracks.
+    pub fn apply<T: Repo>(self, repo: &T) -> Vec<String> {
+        let matches_opt = |filters: &BTreeSet<String>, value: Option<&String>| {
+            filters.is_empty() || value.is_some_and(|v| filters.contains(v))
+        };
+
+        repo.get_track_hashes()
+            .into_iter()
+            .filter(|hash| self.hashes.is_empty() || self.hashes.contains(hash))
+            .filter(|hash| {
+                let Some(entry) = repo.query_track_by_hash(hash) else {
+                    return false;
+                };
+
+                matches_opt(&self.titles, entry.tag_attr.title.as_ref())
+                    && matches_opt(&self.artists, entry.tag_attr.artist.as_ref())
+                    && matches_opt(&self.albums, entry.tag_attr.album.as_ref())
+                    && matches_opt(&self.album_artists, entry.tag_attr.album_artist.as_ref())
+                    && matches_opt(&self.genres, entry.tag_attr.genre.as_ref())
+            })
+            .collect()
     }
 }
 

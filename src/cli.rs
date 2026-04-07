@@ -1,6 +1,6 @@
 //! CLI argument definitions and command-line parsing structures.
 
-use clap::{Parser, Subcommand};
+use clap::{ArgGroup, Parser, Subcommand};
 
 use std::path::PathBuf;
 
@@ -71,10 +71,36 @@ pub enum Commands {
         save_to: Option<PathBuf>,
     },
 
-    /// Removes a track from the repository, optionally removing the file.
+    /// Removes tracks from the repository, optionally removing files.
+    #[command(group(
+        ArgGroup::new("remove_filter")
+            .required(true)
+            .args(["titles", "artists", "albums", "album_artists", "genres", "hashes"])
+    ))]
     Remove {
-        /// File hash or track title.
-        track: String,
+        /// Track title filter (repeatable).
+        #[arg(long = "title")]
+        titles: Vec<String>,
+
+        /// Track artist filter (repeatable).
+        #[arg(long = "artist")]
+        artists: Vec<String>,
+
+        /// Album title filter (repeatable).
+        #[arg(long = "album")]
+        albums: Vec<String>,
+
+        /// Album artist filter (repeatable).
+        #[arg(long = "album-artist")]
+        album_artists: Vec<String>,
+
+        /// Genre filter (repeatable).
+        #[arg(long = "genre")]
+        genres: Vec<String>,
+
+        /// File hash filter (repeatable).
+        #[arg(long = "hash")]
+        hashes: Vec<String>,
 
         /// Removes the media file as well.
         #[arg(short, long, default_value = "false")]

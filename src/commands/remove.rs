@@ -2,9 +2,9 @@
 
 use mcat::{
     config,
-    errors::McatResult,
-    repos::{Entry, Repo, toml_repo::TomlDb},
-    services::is_valid_blake3_hex,
+    errors::{McatError, McatResult},
+    models::TrackFilter,
+    repos::{Repo, toml_repo::TomlDb},
 };
 
 /// Executes the `remove` command.
@@ -12,24 +12,31 @@ use mcat::{
 /// # Errors
 ///
 /// Returns repository loading, lookup, removal, or persistence errors.
-pub fn execute(track: &str, remove_file: bool) -> McatResult<()> {
+pub fn execute(
+    titles: Vec<String>,
+    artists: Vec<String>,
+    albums: Vec<String>,
+    album_artists: Vec<String>,
+    genres: Vec<String>,
+    hashes: Vec<String>,
+    remove_file: bool,
+) -> McatResult<()> {
     if remove_file {
         todo!("crate::commands::remove::execute(): `--remove-file` not implemented yet");
     }
 
     let mut db: TomlDb = Repo::from(config::repo_file_path())?;
+    let filter = TrackFilter::new(titles, artists, albums, album_artists, genres, hashes);
 
-    let entry = if is_valid_blake3_hex(track) {
-        db.query_track_by_hash(track)
-    } else {
-        db.query_track_by_title(track)
-    };
+    let matched_hashes = filter.apply(&db);
 
-    let Some(Entry { file_hash, .. }) = entry else {
-        panic!();
-    };
+    if matched_hashes.is_empty() {
+        return Err(McatError::TrackNotFound);
+    }
 
-    db.remove_track(&file_hash)?;
+    for file_hash in matched_hashes {
+        db.remove_track(&file_hash)?;
+    }
 
     db.persist()
 }
