@@ -8,4 +8,4 @@ clippy:
 	$(CARGO) clippy --all-targets --all-features -- -D warnings
 
 fmt:
-	$(CARGO) fmt --all
+	$(CARGO) +nightly fmt --all
