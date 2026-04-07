@@ -49,7 +49,14 @@ pub fn run() -> McatResult<()> {
             remove_file,
         ),
 
-        Commands::Display => display::execute(),
+        Commands::Display {
+            titles,
+            artists,
+            albums,
+            album_artists,
+            genres,
+            hashes,
+        } => display::execute(titles, artists, albums, album_artists, genres, hashes),
 
         _ => todo!("This subcommand is not implemented yet."),
     }

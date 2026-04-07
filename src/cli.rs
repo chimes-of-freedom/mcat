@@ -17,7 +17,36 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     /// Displays music metadata stored in the repository.
-    Display,
+    #[command(group(
+        ArgGroup::new("display_filter")
+            .required(true)
+            .args(["titles", "artists", "albums", "album_artists", "genres", "hashes"])
+    ))]
+    Display {
+        /// Track title filter (repeatable).
+        #[arg(long = "title")]
+        titles: Vec<String>,
+
+        /// Track artist filter (repeatable).
+        #[arg(long = "artist")]
+        artists: Vec<String>,
+
+        /// Album title filter (repeatable).
+        #[arg(long = "album")]
+        albums: Vec<String>,
+
+        /// Album artist filter (repeatable).
+        #[arg(long = "album-artist")]
+        album_artists: Vec<String>,
+
+        /// Genre filter (repeatable).
+        #[arg(long = "genre")]
+        genres: Vec<String>,
+
+        /// File hash filter (repeatable).
+        #[arg(long = "hash")]
+        hashes: Vec<String>,
+    },
 
     /// Edits metadata for a music file.
     Edit {

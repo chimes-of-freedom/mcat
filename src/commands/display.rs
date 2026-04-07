@@ -3,6 +3,7 @@
 use mcat::{
     config,
     errors::McatResult,
+    models::{TagAttributes, TrackFilter},
     output::display_tag_attrs,
     repos::{Repo, toml_repo::TomlDb},
 };
@@ -12,11 +13,27 @@ use mcat::{
 /// # Errors
 ///
 /// Returns repository loading errors.
-pub fn execute() -> McatResult<()> {
-    let db: TomlDb = Repo::from(config::repo_file_path())?;
+pub fn execute(
+    titles: Vec<String>,
+    artists: Vec<String>,
+    albums: Vec<String>,
+    album_artists: Vec<String>,
+    genres: Vec<String>,
+    hashes: Vec<String>,
+) -> McatResult<()> {
+    let repo: TomlDb = Repo::from(config::repo_file_path())?;
+    let filter = TrackFilter::new(titles, artists, albums, album_artists, genres, hashes);
+    let track_hashes = filter.apply(&repo);
 
-    let tag_attrs = db.get_tag_attrs();
+    let mut tag_attrs = Vec::new();
 
+    for track_hash in track_hashes {
+        if let Some(entry) = repo.query_track_by_hash(&track_hash) {
+            tag_attrs.push(entry.tag_attr);
+        }
+    }
+
+    let tag_attrs: Vec<&TagAttributes> = tag_attrs.iter().collect();
     display_tag_attrs(&tag_attrs);
 
     Ok(())
