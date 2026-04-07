@@ -68,8 +68,7 @@ impl TagAttributes {
     }
 }
 
-/// Image fields extracted from a media file tag. [`Image::Inline`] represents
-/// the full image while [`Image::Linked`] represents a link to file on disk.
+/// Image fields extracted from a media file tag.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Image {
     pub mime_type: Option<String>,
@@ -78,7 +77,8 @@ pub struct Image {
     pub data: ImageData,
 }
 
-// Enum for image payload
+/// Enum for image payload. [`ImageData::Inline`] represents the full image while
+/// [`ImageData::Linked`] represents a link to file on disk.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ImageData {
