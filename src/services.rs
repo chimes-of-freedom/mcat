@@ -2,7 +2,7 @@
 
 use crate::config;
 use crate::errors::{McatError, McatResult};
-use crate::models::{ImageData, TagAttributes};
+use crate::models::TagAttributes;
 use crate::repos::Repo;
 
 use std::fs::{self, File};
@@ -187,27 +187,8 @@ pub fn scan_media(
 
             // NOTE: parse `ImageData::Inline` to `ImageData::Linked` before inserting
             // a track!
-            if let Some(image) = tag_attr.front_cover.take() {
-                if let ImageData::Inline(data) = &image.data {
-                    // Extract extension from mime type (e.g., "image/jpeg" -> "jpeg")
-                    let ext = image
-                        .mime_type
-                        .as_deref()
-                        .and_then(|m| m.split('/').next_back())
-                        .unwrap_or("bin");
-
-                    let file_name = format!("{}.{}", file_hash, ext);
-                    let mut image_path = config::cover_dir_path();
-                    image_path.push(&file_name);
-
-                    // Write image data back to disk
-                    fs::write(&image_path, data)?;
-
-                    // Update tag_attr with the linked version
-                    tag_attr.front_cover = Some(image.into_linked(file_name));
-                } else {
-                    tag_attr.front_cover = Some(image);
-                }
+            if let Some(image) = tag_attr.front_cover {
+                tag_attr.front_cover = Some(image.linked_and_to_disk(&file_hash)?);
             }
 
             repo.insert_track(file_hash, tag_attr);

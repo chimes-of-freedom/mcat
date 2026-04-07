@@ -7,6 +7,9 @@ use lofty::{picture::PictureType, prelude::*};
 use serde::{Deserialize, Serialize};
 use tabled::Tabled;
 
+use crate::config;
+use crate::errors::McatResult;
+
 /// Metadata fields extracted from a media file tag.
 #[derive(Serialize, Deserialize, Clone, Tabled)]
 #[tabled(display(Option, "tabled::derive::display::option", ""))]
@@ -102,6 +105,36 @@ impl Image {
         Self {
             data: ImageData::Linked { file_name },
             ..self
+        }
+    }
+
+    /// Converts [`Image::data`] from [`ImageData::Inline`] to
+    /// [`ImageData::Linked`] and writes data back to disk. Does nothing when
+    /// [`Image::data`] is already a [`ImageData::Linked`].
+    ///
+    /// # Errors
+    ///
+    /// Returns I/O related errors when writing data back to disk.
+    pub fn linked_and_to_disk(self, file_hash: &str) -> McatResult<Image> {
+        match &self.data {
+            ImageData::Inline(data) => {
+                // Extract extension from mime type (e.g., "image/jpeg" -> "jpeg")
+                let ext = self
+                    .mime_type
+                    .as_deref()
+                    .and_then(|m| m.split('/').next_back())
+                    .unwrap_or("bin");
+
+                let file_name = format!("{}.{}", file_hash, ext);
+                let mut image_path = config::cover_dir_path();
+                image_path.push(&file_name);
+
+                // Write image data back to disk
+                std::fs::write(&image_path, data)?;
+
+                Ok(self.into_linked(file_name))
+            }
+            _ => Ok(self),
         }
     }
 }

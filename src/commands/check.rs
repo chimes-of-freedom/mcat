@@ -62,7 +62,10 @@ pub fn execute(
         if !exist {
             for (file_path, file_hash) in files_not_tracked {
                 let tag = get_primary_tag(&file_path)?;
-                let tag_attr = TagAttributes::from_tag(&tag);
+                let mut tag_attr = TagAttributes::from_tag(&tag);
+                if let Some(image) = tag_attr.front_cover {
+                    tag_attr.front_cover = Some(image.linked_and_to_disk(&file_hash)?);
+                }
                 db.insert_track(file_hash, tag_attr);
             }
         }
