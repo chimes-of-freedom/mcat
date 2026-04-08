@@ -4,7 +4,7 @@ use mcat::{
     config,
     errors::McatResult,
     models::{TagAttributes, TrackFilter},
-    output::display_tag_attrs,
+    output::display_as_table,
     repos::{Repo, toml_repo::TomlDb},
 };
 
@@ -34,7 +34,7 @@ pub fn execute(
     }
 
     let tag_attrs: Vec<&TagAttributes> = tag_attrs.iter().collect();
-    display_tag_attrs(&tag_attrs);
+    display_as_table(&tag_attrs);
 
     Ok(())
 }
