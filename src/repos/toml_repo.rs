@@ -88,8 +88,22 @@ impl TomlDb {
     }
 
     /// Removes an entry by key.
-    pub fn remove_entry(&mut self, key: &str) -> Option<Entry> {
-        self.entries.remove(key)
+    pub fn remove_entry(&mut self, key: &str) -> McatResult<Option<Entry>> {
+        let Some(entry) = self.entries.remove(key) else {
+            return Ok(None);
+        };
+
+        let Some(image) = &entry.tag_attr.front_cover else {
+            return Ok(Some(entry));
+        };
+
+        let ImageData::Linked { file_name } = &image.data else {
+            return Ok(Some(entry));
+        };
+
+        fs::remove_file(&file_name)?;
+
+        Ok(Some(entry))
     }
 
     /// Recomputes `total_hash` from current entry keys.
@@ -123,7 +137,7 @@ impl Repo for TomlDb {
     }
 
     fn remove_track(&mut self, file_hash: &str) -> McatResult<()> {
-        if self.remove_entry(file_hash).is_some() {
+        if self.remove_entry(file_hash)?.is_some() {
             Ok(())
         } else {
             Err(McatError::TrackNotFound)
