@@ -74,7 +74,7 @@ pub fn execute(
             // copy new image file to images folder
             fs::copy(&new_front_cover_path, &new_image_path)?;
 
-            // remove old image file
+            // remove old image file if not not recovered by new image file
             if let Some(image) = &tag_attr.front_cover {
                 if let ImageData::Linked { file_name } = &image.data {
                     let mut old_file_path = config::cover_dir_path();

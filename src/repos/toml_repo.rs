@@ -101,7 +101,7 @@ impl TomlDb {
             return Ok(Some(entry));
         };
 
-        fs::remove_file(&file_name)?;
+        fs::remove_file(file_name)?;
 
         Ok(Some(entry))
     }

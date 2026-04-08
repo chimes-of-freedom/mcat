@@ -137,9 +137,9 @@ pub fn is_file_supported(path: impl AsRef<Path>) -> McatResult<bool> {
 }
 
 /// Returns inferred mime type string of given file.
-/// 
+///
 /// # Errors
-/// 
+///
 /// Returns an error if failed to read the path.
 pub fn infer_mime_type(path: impl AsRef<Path>) -> McatResult<&'static str> {
     Ok(infer::get_from_path(path)?

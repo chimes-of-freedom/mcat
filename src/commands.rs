@@ -65,9 +65,16 @@ pub fn run() -> McatResult<()> {
             album,
             album_artist,
             genre,
-            front_cover
-        } => edit::execute(track, title, artist, album, album_artist, genre, front_cover),
-
+            front_cover,
+        } => edit::execute(
+            track,
+            title,
+            artist,
+            album,
+            album_artist,
+            genre,
+            front_cover,
+        ),
         // _ => todo!("This subcommand is not implemented yet."),
     }
 }
