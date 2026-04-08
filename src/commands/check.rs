@@ -87,6 +87,12 @@ pub fn execute(
         };
         let check_res = toml::to_string(&check_res)?;
         fs::write(&save_path, &check_res)?;
+    } else {
+        println!(
+            "Check result: {:?} not tracked, {:?} not exist(s).",
+            not_tracked.len(),
+            not_exists.len()
+        );
     }
 
     Ok(())
