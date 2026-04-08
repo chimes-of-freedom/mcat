@@ -201,8 +201,8 @@ impl TrackFilter {
 #[derive(Serialize, Deserialize)]
 pub struct CheckResult {
     /// Hashes found in media files but not tracked in the repository.
-    pub not_tracked: Option<BTreeSet<String>>,
+    pub not_tracked: BTreeSet<String>,
 
     /// Hashes tracked in the repository but missing from the media directory.
-    pub not_exists: Option<BTreeSet<String>>,
+    pub not_exists: BTreeSet<String>,
 }

@@ -44,16 +44,15 @@ pub fn execute(
         }
     }
 
-    // `None` implies a filter is applied
     let not_tracked = if !exist {
-        Some(&file_hashes - &db_keys)
+        &file_hashes - &db_keys
     } else {
-        None
+        BTreeSet::new()
     };
     let not_exists = if !track {
-        Some(&db_keys - &file_hashes)
+        &db_keys - &file_hashes
     } else {
-        None
+        BTreeSet::new()
     };
 
     // apply the result to the repo
@@ -72,7 +71,7 @@ pub fn execute(
 
         // delete tracks not existing under `media/`
         if !track {
-            for file_hash in not_exists.as_ref().unwrap() {
+            for file_hash in &not_exists {
                 db.remove_track(file_hash)?;
             }
         }
@@ -80,7 +79,7 @@ pub fn execute(
         db.persist()?;
     }
 
-    // save the result to `save_path`
+    // save the result to `save_path` or print a message on terminal
     if let Some(save_path) = save_to {
         let check_res = CheckResult {
             not_tracked,
