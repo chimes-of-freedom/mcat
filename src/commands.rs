@@ -58,6 +58,16 @@ pub fn run() -> McatResult<()> {
             hashes,
         } => display::execute(titles, artists, albums, album_artists, genres, hashes),
 
-        _ => todo!("This subcommand is not implemented yet."),
+        Commands::Edit {
+            track,
+            title,
+            artist,
+            album,
+            album_artist,
+            genre,
+            front_cover
+        } => edit::execute(track, title, artist, album, album_artist, genre, front_cover),
+
+        // _ => todo!("This subcommand is not implemented yet."),
     }
 }

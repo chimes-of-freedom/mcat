@@ -48,10 +48,15 @@ pub enum Commands {
         hashes: Vec<String>,
     },
 
-    /// Edits metadata for a music file.
+    /// Edits metadata of a track.
+    #[command(group(
+        ArgGroup::new("edit_group")
+            .required(true)
+            .args(["title", "artist", "album", "album_artist", "genre", "front_cover"])
+    ))]
     Edit {
-        /// Path to the music file to edit.
-        src: PathBuf,
+        /// Hash or title of rack to edit.
+        track: String,
 
         /// New title.
         #[arg(long)]
@@ -73,9 +78,9 @@ pub enum Commands {
         #[arg(long)]
         genre: Option<String>,
 
-        /// Output path for the edited file (defaults to `src`).
-        #[arg(long = "output", short = 'o')]
-        dst: Option<PathBuf>,
+        /// Path to new front cover.
+        #[arg(long)]
+        front_cover: Option<PathBuf>,
     },
 
     /// Initializes a repository from files under `media/`.

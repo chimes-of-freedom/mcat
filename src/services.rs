@@ -136,6 +136,17 @@ pub fn is_file_supported(path: impl AsRef<Path>) -> McatResult<bool> {
     }
 }
 
+/// Returns inferred mime type string of given file.
+/// 
+/// # Errors
+/// 
+/// Returns an error if failed to read the path.
+pub fn infer_mime_type(path: impl AsRef<Path>) -> McatResult<&'static str> {
+    Ok(infer::get_from_path(path)?
+        .map(|t| t.mime_type())
+        .unwrap_or("application/octet-stream"))
+}
+
 /// Returns whether `s` is a valid BLAKE3 hash.
 pub fn is_valid_blake3_hex(s: &str) -> bool {
     blake3::Hash::from_hex(s).is_ok()
