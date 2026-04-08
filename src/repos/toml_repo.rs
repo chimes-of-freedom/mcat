@@ -131,7 +131,7 @@ impl Repo for TomlDb {
 
     fn insert_track(&mut self, file_hash: String, tag_attr: TagAttributes) {
         self.insert_entry(Entry {
-            file_hash: file_hash.to_string(),
+            file_hash,
             tag_attr,
         });
     }
