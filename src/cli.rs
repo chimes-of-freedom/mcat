@@ -140,4 +140,14 @@ pub enum Commands {
         #[arg(short, long, default_value = "false")]
         remove_file: bool,
     },
+
+    /// Imports music files from a directory.
+    Import {
+        /// Path to directory.
+        path: PathBuf,
+
+        /// Move files instead of copying them.
+        #[arg(short, long = "move")]
+        move_files: bool,
+    },
 }

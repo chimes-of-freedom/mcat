@@ -17,7 +17,12 @@ use mcat::{
 ///
 /// # Errors
 ///
-/// This command is currently unimplemented and always panics via `todo!`.
+/// Returns an error if:
+///
+/// - Loading or persisting the repository fails.
+/// - The requested track cannot be found.
+/// - Front-cover file checks or file operations fail.
+/// - Inferring the front-cover MIME type fails.
 pub fn execute(
     track: String,
     title: Option<String>,
@@ -68,8 +73,7 @@ pub fn execute(
             let new_mime_type = infer_mime_type(&new_front_cover_path)?;
             let new_ext = new_mime_type.split('/').next_back().unwrap_or("bin");
             let new_image_name = format!("{}.{}", &file_hash, new_ext);
-            let mut new_image_path = config::cover_dir_path();
-            new_image_path.push(&new_image_name);
+            let new_image_path = config::cover_dir_path().join(&new_image_name);
 
             // copy new image file to images folder
             fs::copy(&new_front_cover_path, &new_image_path)?;

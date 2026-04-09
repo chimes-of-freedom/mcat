@@ -75,6 +75,7 @@ pub fn run() -> McatResult<()> {
             genre,
             front_cover,
         ),
-        // _ => todo!("This subcommand is not implemented yet."),
+
+        Commands::Import { path, move_files } => import::execute(path, move_files),
     }
 }
