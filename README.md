@@ -32,10 +32,11 @@ Usage: mcat.exe <COMMAND>
 
 Commands:
   display  Displays music metadata stored in the repository
-  edit     Edits metadata for a music file
+  edit     Edits metadata of a track
   init     Initializes a repository from files under `media/`
   check    Checks consistency between files under `media/` and repository records
   remove   Removes tracks from the repository, optionally removing files
+  import   Imports music files from a directory
   help     Print this message or the help of the given subcommand(s)
 
 Options:
@@ -75,6 +76,8 @@ Options:
 
 ```text
 $ mcat remove --help
+Removes tracks from the repository, optionally removing files
+
 Usage: mcat.exe remove [OPTIONS] <--title <TITLES>|--artist <ARTISTS>|--album <ALBUMS>|--album-artist <ALBUM_ARTISTS>|--genre <GENRES>|--hash <HASHES>>
 
 Options:
@@ -109,22 +112,38 @@ Options:
 ### 编辑文件元数据
 
 ```text
-$ mcat edit --help   
-write the music metadata
+$ mcat edit --help
+Edits metadata of a track
 
-Usage: mcat edit [OPTIONS] <SRC>
+Usage: mcat.exe edit <--title <TITLE>|--artist <ARTIST>|--album <ALBUM>|--album-artist <ALBUM_ARTIST>|--genre <GENRE>|--front-cover <FRONT_COVER>> <TRACK>
 
 Arguments:
-  <SRC>  path of music file to be edited
+  <TRACK>  Hash or title of rack to edit
 
 Options:
-      --title <TITLE>                new title
-      --artist <ARTIST>              new artist
-      --album <ALBUM>                new album
-      --album-artist <ALBUM_ARTIST>  new album artist
-      --genre <GENRE>                new genre
-  -o, --output <DST>                 path of edited music file to be saved at (default `src`)
+      --title <TITLE>                New title
+      --artist <ARTIST>              New artist
+      --album <ALBUM>                New album
+      --album-artist <ALBUM_ARTIST>  New album artist
+      --genre <GENRE>                New genre
+      --front-cover <FRONT_COVER>    Path to new front cover
   -h, --help                         Print help
+```
+
+### 导入音乐文件到仓库
+
+```text
+$ mcat import --help
+Imports music files from a directory
+
+Usage: mcat.exe import [OPTIONS] <PATH>
+
+Arguments:
+  <PATH>  Path to directory
+
+Options:
+  -m, --move  Move files instead of copying them
+  -h, --help  Print hel
 ```
 
 ## Todo List
