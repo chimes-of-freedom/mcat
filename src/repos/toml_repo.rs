@@ -69,7 +69,7 @@ impl TomlDb {
             fs::create_dir_all(&parent_path)?;
         }
 
-        // write to new db file
+        // write to new database file
         let db_string = toml::to_string(self)?;
         fs::write(&toml_path, &db_string)?;
 

@@ -24,17 +24,17 @@ pub fn execute(
     hashes: Vec<String>,
     remove_file: bool,
 ) -> McatResult<()> {
-    let mut db: TomlDb = Repo::from(config::repo_file_path())?;
+    let mut repo: TomlDb = Repo::from(config::repo_file_path())?;
     let filter = TrackFilter::new(titles, artists, albums, album_artists, genres, hashes);
 
-    let matched_hashes = filter.apply(&db);
+    let matched_hashes = filter.apply(&repo);
 
     if matched_hashes.is_empty() {
         return Err(McatError::TrackNotFound);
     }
 
     for file_hash in &matched_hashes {
-        db.remove_track(file_hash)?;
+        repo.remove_track(file_hash)?;
     }
 
     if remove_file {
@@ -62,5 +62,5 @@ pub fn execute(
         }
     }
 
-    db.persist()
+    repo.persist()
 }

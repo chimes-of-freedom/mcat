@@ -22,8 +22,8 @@ pub fn execute(
     repair: bool,
     save_to: Option<impl AsRef<Path>>,
 ) -> McatResult<()> {
-    let mut db: TomlDb = Repo::from(config::repo_file_path())?;
-    let db_keys = db.get_track_hashes();
+    let mut repo: TomlDb = Repo::from(config::repo_file_path())?;
+    let track_hashes = repo.get_track_hashes();
 
     let mut file_hashes = BTreeSet::new();
 
@@ -45,12 +45,12 @@ pub fn execute(
     }
 
     let not_tracked = if !exist {
-        &file_hashes - &db_keys
+        &file_hashes - &track_hashes
     } else {
         BTreeSet::new()
     };
     let not_exists = if !track {
-        &db_keys - &file_hashes
+        &track_hashes - &file_hashes
     } else {
         BTreeSet::new()
     };
@@ -65,18 +65,18 @@ pub fn execute(
                 if let Some(image) = tag_attr.front_cover {
                     tag_attr.front_cover = Some(image.linked_and_to_disk(&file_hash)?);
                 }
-                db.insert_track(file_hash, tag_attr);
+                repo.insert_track(file_hash, tag_attr);
             }
         }
 
         // delete tracks not existing under `media/`
         if !track {
             for file_hash in &not_exists {
-                db.remove_track(file_hash)?;
+                repo.remove_track(file_hash)?;
             }
         }
 
-        db.persist()?;
+        repo.persist()?;
     }
 
     // save the result to `save_path` or print a message on terminal
