@@ -101,7 +101,7 @@ impl TomlDb {
             return Ok(Some(entry));
         };
 
-        fs::remove_file(file_name)?;
+        fs::remove_file(config::cover_dir_path().join(file_name))?;
 
         Ok(Some(entry))
     }
