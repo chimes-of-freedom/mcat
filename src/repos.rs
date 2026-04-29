@@ -1,7 +1,6 @@
 //! Repository abstractions and concrete repository module declarations.
 
 use std::collections::BTreeSet;
-use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
@@ -39,16 +38,6 @@ pub trait Repo {
 
     /// Returns tag attributes for all tracks.
     fn get_tag_attrs(&self) -> Vec<&TagAttributes>;
-
-    /// Loads a repository from a file.
-    ///
-    /// # Errors
-    ///
-    /// Returns I/O or TOML deserialization related errors while
-    /// opening the file or deserializing its content.
-    fn from(file_path: impl AsRef<Path>) -> McatResult<Self>
-    where
-        Self: Sized;
 
     /// Persists the repository to its backing file.
     ///

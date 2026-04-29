@@ -17,7 +17,7 @@ use crate::{
 ///
 /// Returns an error if media scanning, file I/O, or repository persistence fails.
 pub fn execute(path: impl AsRef<Path>, move_files: bool) -> McatResult<()> {
-    let mut repo: TomlDb = Repo::from(config::repo_file_path())?;
+    let mut repo = TomlDb::try_from(config::repo_file_path())?;
 
     let mut entities_count = 0;
     let mut imported_count = 0;
@@ -39,7 +39,7 @@ pub fn execute(path: impl AsRef<Path>, move_files: bool) -> McatResult<()> {
                 repeated_track.push(tag_attr);
             } else {
                 let tag = get_primary_tag(&file_path)?;
-                let mut tag_attr = TagAttributes::from_tag(&tag);
+                let mut tag_attr = TagAttributes::from(tag);
                 if let Some(image) = tag_attr.front_cover {
                     tag_attr.front_cover = Some(image.linked_and_to_disk(&file_hash)?);
                 }

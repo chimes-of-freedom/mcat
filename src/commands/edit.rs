@@ -25,7 +25,7 @@ use crate::{
 /// - Front-cover file checks or file operations fail.
 /// - Inferring the front-cover MIME type fails.
 pub fn execute(track: String, edit: EditArgs) -> McatResult<()> {
-    let mut repo: TomlDb = Repo::from(config::repo_file_path())?;
+    let mut repo = TomlDb::try_from(config::repo_file_path())?;
 
     let entry = if is_valid_blake3_hex(&track) {
         repo.query_track_by_hash(&track)

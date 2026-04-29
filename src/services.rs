@@ -186,7 +186,7 @@ pub fn scan_media(
         if file_type.is_file() && is_file_supported(&file_path)? {
             // NOTE: get the tag before stripping it from file!
             let tag = get_primary_tag(&file_path)?;
-            let mut tag_attr = TagAttributes::from_tag(&tag);
+            let mut tag_attr = TagAttributes::from(tag);
 
             let file_hash = if saved {
                 strip_tags_from_file(&file_path, saved)?;

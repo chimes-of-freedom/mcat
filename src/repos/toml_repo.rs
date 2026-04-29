@@ -3,7 +3,7 @@
 use std::{
     collections::{BTreeMap, BTreeSet},
     fs,
-    path::{Path, PathBuf},
+    path::PathBuf,
 };
 
 use blake3::Hasher;
@@ -27,14 +27,8 @@ pub struct TomlDb {
     entries: BTreeMap<String, Entry>,
 }
 
-impl TomlDb {
-    /// Creates an empty database.
-    pub fn new() -> Self {
-        TomlDb {
-            total_hash: String::new(),
-            entries: BTreeMap::new(),
-        }
-    }
+impl TryFrom<PathBuf> for TomlDb {
+    type Error = McatError;
 
     /// Loads a database from a TOML file.
     ///
@@ -42,11 +36,21 @@ impl TomlDb {
     ///
     /// Returns I/O errors when reading the file and TOML deserialization
     /// errors when parsing content.
-    pub fn from_file(toml_path: impl AsRef<Path>) -> McatResult<Self> {
+    fn try_from(toml_path: PathBuf) -> McatResult<Self> {
         let db_string = fs::read_to_string(toml_path)?;
         let db = toml::from_str(&db_string)?;
 
         Ok(db)
+    }
+}
+
+impl TomlDb {
+    /// Creates an empty database.
+    pub fn new() -> Self {
+        TomlDb {
+            total_hash: String::new(),
+            entries: BTreeMap::new(),
+        }
     }
 
     /// Writes the database to [`config::repo_file_path`] with a temporary backup.
@@ -161,10 +165,6 @@ impl Repo for TomlDb {
 
     fn get_tag_attrs(&self) -> Vec<&TagAttributes> {
         self.entries.values().map(|entry| &entry.tag_attr).collect()
-    }
-
-    fn from(file_path: impl AsRef<Path>) -> McatResult<Self> {
-        Self::from_file(file_path)
     }
 
     fn persist(&mut self) -> McatResult<()> {

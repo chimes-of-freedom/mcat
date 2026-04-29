@@ -16,7 +16,7 @@ use crate::{
 ///
 /// Returns repository loading, lookup, removal, or persistence errors.
 pub fn execute(filter: TrackFilter, remove_file: bool) -> McatResult<()> {
-    let mut repo: TomlDb = Repo::from(config::repo_file_path())?;
+    let mut repo = TomlDb::try_from(config::repo_file_path())?;
 
     let matched_hashes = filter.apply(&repo);
 

@@ -22,7 +22,7 @@ pub fn execute(
     repair: bool,
     save_to: Option<impl AsRef<Path>>,
 ) -> McatResult<()> {
-    let mut repo: TomlDb = Repo::from(config::repo_file_path())?;
+    let mut repo = TomlDb::try_from(config::repo_file_path())?;
     let track_hashes = repo.get_track_hashes();
 
     let mut file_hashes = BTreeSet::new();
@@ -61,7 +61,7 @@ pub fn execute(
         if !exist {
             for (file_path, file_hash) in files_not_tracked {
                 let tag = get_primary_tag(&file_path)?;
-                let mut tag_attr = TagAttributes::from_tag(&tag);
+                let mut tag_attr = TagAttributes::from(tag);
                 if let Some(image) = tag_attr.front_cover {
                     tag_attr.front_cover = Some(image.linked_and_to_disk(&file_hash)?);
                 }

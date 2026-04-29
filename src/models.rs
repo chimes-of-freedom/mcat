@@ -48,9 +48,10 @@ impl TagAttributes {
             }
         )
     }
+}
 
-    /// Builds [`TagAttributes`] from a [`Tag`].
-    pub fn from_tag(tag: &Tag) -> TagAttributes {
+impl From<Tag> for TagAttributes {
+    fn from(tag: Tag) -> TagAttributes {
         let front_cover = tag
             .get_picture_type(PictureType::CoverFront)
             .map(|cover| Image {
