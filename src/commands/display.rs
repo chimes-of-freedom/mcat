@@ -1,6 +1,6 @@
 //! `display` command handler for querying and showing track metadata.
 
-use mcat::{
+use crate::{
     config,
     errors::McatResult,
     models::{TagAttributes, TrackFilter},

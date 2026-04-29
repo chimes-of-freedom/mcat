@@ -1,5 +1,7 @@
 //! Crate root for shared module declarations and public exports.
 
+pub mod cli;
+pub mod commands;
 pub mod config;
 pub mod errors;
 pub mod models;

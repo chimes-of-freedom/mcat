@@ -2,7 +2,7 @@
 
 use std::{fs, path::Path};
 
-use mcat::{
+use crate::{
     config,
     errors::McatResult,
     models::TagAttributes,

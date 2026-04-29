@@ -2,7 +2,7 @@
 
 use std::{collections::BTreeSet, fs, path::Path};
 
-use mcat::{
+use crate::{
     config,
     errors::McatResult,
     models::{CheckResult, TagAttributes},

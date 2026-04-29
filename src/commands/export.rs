@@ -1,6 +1,6 @@
 //! `export` command handler for exporting tracks to an external directory.
 
-use mcat::errors::McatResult;
+use crate::errors::McatResult;
 
 /// Executes the `export` command.
 ///

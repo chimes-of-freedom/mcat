@@ -5,7 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use mcat::{
+use crate::{
     config,
     errors::{McatError, McatResult},
     models::{Image, ImageData},
