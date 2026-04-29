@@ -4,6 +4,8 @@ use clap::{ArgGroup, Parser, Subcommand};
 
 use std::path::PathBuf;
 
+use crate::models::TrackFilter;
+
 /// Top-level CLI parser for mcat.
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -140,4 +142,18 @@ pub struct EditArgs {
     /// Path to new front cover.
     #[arg(long)]
     pub front_cover: Option<PathBuf>,
+}
+
+// cli.rs 或 commands.rs
+impl From<FilterArgs> for TrackFilter {
+    fn from(f: FilterArgs) -> Self {
+        TrackFilter::new(
+            f.titles,
+            f.artists,
+            f.albums,
+            f.album_artists,
+            f.genres,
+            f.hashes,
+        )
+    }
 }

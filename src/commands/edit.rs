@@ -6,6 +6,7 @@ use std::{
 };
 
 use crate::{
+    cli::EditArgs,
     config,
     errors::{McatError, McatResult},
     models::{Image, ImageData},
@@ -23,15 +24,7 @@ use crate::{
 /// - The requested track cannot be found.
 /// - Front-cover file checks or file operations fail.
 /// - Inferring the front-cover MIME type fails.
-pub fn execute(
-    track: String,
-    title: Option<String>,
-    artist: Option<String>,
-    album: Option<String>,
-    album_artist: Option<String>,
-    genre: Option<String>,
-    front_cover: Option<impl AsRef<Path>>,
-) -> McatResult<()> {
+pub fn execute(track: String, edit: EditArgs) -> McatResult<()> {
     let mut repo: TomlDb = Repo::from(config::repo_file_path())?;
 
     let entry = if is_valid_blake3_hex(&track) {
@@ -47,25 +40,26 @@ pub fn execute(
     let file_hash = entry.file_hash.clone();
 
     // update metadata except front cover
-    if let Some(title) = title {
+    if let Some(title) = edit.title {
         tag_attr.title = Some(title);
     }
-    if let Some(artist) = artist {
+    if let Some(artist) = edit.artist {
         tag_attr.artist = Some(artist);
     }
-    if let Some(album) = album {
+    if let Some(album) = edit.album {
         tag_attr.album = Some(album);
     }
-    if let Some(album_artist) = album_artist {
+    if let Some(album_artist) = edit.album_artist {
         tag_attr.album_artist = Some(album_artist);
     }
-    if let Some(genre) = genre {
+    if let Some(genre) = edit.genre {
         tag_attr.genre = Some(genre);
     }
 
     // update front cover
-    if let Some(new_front_cover) = front_cover {
-        let new_front_cover_path = PathBuf::from(new_front_cover.as_ref());
+    if let Some(new_front_cover) = edit.front_cover {
+        let new_front_cover_path =
+            PathBuf::from(<PathBuf as AsRef<Path>>::as_ref(&new_front_cover));
 
         // ensure new image exists
         if new_front_cover_path.try_exists()? && new_front_cover_path.is_file() {

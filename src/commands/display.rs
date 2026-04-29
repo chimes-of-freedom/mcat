@@ -13,16 +13,8 @@ use crate::{
 /// # Errors
 ///
 /// Returns repository loading errors.
-pub fn execute(
-    titles: Vec<String>,
-    artists: Vec<String>,
-    albums: Vec<String>,
-    album_artists: Vec<String>,
-    genres: Vec<String>,
-    hashes: Vec<String>,
-) -> McatResult<()> {
+pub fn execute(filter: TrackFilter) -> McatResult<()> {
     let repo: TomlDb = Repo::from(config::repo_file_path())?;
-    let filter = TrackFilter::new(titles, artists, albums, album_artists, genres, hashes);
     let track_hashes = filter.apply(&repo);
 
     let mut tag_attrs = Vec::new();

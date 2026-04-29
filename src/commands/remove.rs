@@ -15,17 +15,8 @@ use crate::{
 /// # Errors
 ///
 /// Returns repository loading, lookup, removal, or persistence errors.
-pub fn execute(
-    titles: Vec<String>,
-    artists: Vec<String>,
-    albums: Vec<String>,
-    album_artists: Vec<String>,
-    genres: Vec<String>,
-    hashes: Vec<String>,
-    remove_file: bool,
-) -> McatResult<()> {
+pub fn execute(filter: TrackFilter, remove_file: bool) -> McatResult<()> {
     let mut repo: TomlDb = Repo::from(config::repo_file_path())?;
-    let filter = TrackFilter::new(titles, artists, albums, album_artists, genres, hashes);
 
     let matched_hashes = filter.apply(&repo);
 

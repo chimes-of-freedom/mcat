@@ -2,8 +2,9 @@
 
 use clap::Parser;
 
-use crate::cli::{Cli, Commands, EditArgs, FilterArgs};
+use crate::cli::{Cli, Commands};
 use crate::errors::McatResult;
+use crate::models::TrackFilter;
 
 pub mod check;
 pub mod display;
@@ -32,58 +33,13 @@ pub fn run() -> McatResult<()> {
         } => check::execute(track, exist, repair, save_to),
 
         Commands::Remove {
-            filter:
-                FilterArgs {
-                    titles,
-                    artists,
-                    albums,
-                    album_artists,
-                    genres,
-                    hashes,
-                },
+            filter,
             remove_file,
-        } => remove::execute(
-            titles,
-            artists,
-            albums,
-            album_artists,
-            genres,
-            hashes,
-            remove_file,
-        ),
+        } => remove::execute(TrackFilter::from(filter), remove_file),
 
-        Commands::Display {
-            filter:
-                FilterArgs {
-                    titles,
-                    artists,
-                    albums,
-                    album_artists,
-                    genres,
-                    hashes,
-                },
-        } => display::execute(titles, artists, albums, album_artists, genres, hashes),
+        Commands::Display { filter } => display::execute(TrackFilter::from(filter)),
 
-        Commands::Edit {
-            track,
-            edit:
-                EditArgs {
-                    title,
-                    artist,
-                    album,
-                    album_artist,
-                    genre,
-                    front_cover,
-                },
-        } => edit::execute(
-            track,
-            title,
-            artist,
-            album,
-            album_artist,
-            genre,
-            front_cover,
-        ),
+        Commands::Edit { track, edit } => edit::execute(track, edit),
 
         Commands::Import { path, move_files } => import::execute(path, move_files),
     }
