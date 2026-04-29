@@ -1,10 +1,11 @@
 //! CLI argument definitions and command-line parsing structures.
 
+use chrono::NaiveDate;
 use clap::{ArgGroup, Parser, Subcommand};
 
-use std::path::PathBuf;
+use std::{path::PathBuf, str::FromStr};
 
-use crate::models::TrackFilter;
+use crate::{errors::McatError, models::TrackFilter};
 
 /// Top-level CLI parser for mcat.
 #[derive(Parser)]
@@ -81,8 +82,20 @@ pub enum Commands {
     group(
         ArgGroup::new("filter_group")
             .required(true)
-            .args(["titles", "artists", "albums", "album_artists", "genres", "hashes"])
-    )
+            .args([
+                "titles",
+                "artists",
+                "albums",
+                "album_artists",
+                "dates",
+                "track_numbers",
+                "disc_numbers",
+                "genres",
+                "composers",
+                "lyricists",
+                "hashes",
+            ]),
+    ),
 )]
 pub struct FilterArgs {
     /// Track title filter (repeatable).
@@ -101,9 +114,29 @@ pub struct FilterArgs {
     #[arg(long = "album-artist")]
     pub album_artists: Vec<String>,
 
+    /// Recording / Release date filter (repeatable).
+    #[arg(long = "date")]
+    pub dates: Vec<String>,
+
+    /// Track number filter (repeatable).
+    #[arg(long = "track-number")]
+    pub track_numbers: Vec<usize>,
+
+    /// Disc number filter (repeatable).
+    #[arg(long = "disc-number")]
+    pub disc_numbers: Vec<usize>,
+
     /// Genre filter (repeatable).
     #[arg(long = "genre")]
     pub genres: Vec<String>,
+
+    /// Composer filter (repeatable).
+    #[arg(long = "composer")]
+    pub composers: Vec<String>,
+
+    /// Lyricist filter (repeatable).
+    #[arg(long = "lyricist")]
+    pub lyricists: Vec<String>,
 
     /// File hash filter (repeatable).
     #[arg(long = "hash")]
@@ -115,8 +148,20 @@ pub struct FilterArgs {
     group(
         ArgGroup::new("edit_group")
             .required(true)
-            .args(["title", "artist", "album", "album_artist", "genre", "front_cover"])
-    )
+            .args([
+                "title",
+                "artist",
+                "album",
+                "album_artist",
+                "date",
+                "track_number",
+                "disc_number",
+                "genre",
+                "composer",
+                "lyricist",
+                "front_cover",
+            ]),
+    ),
 )]
 pub struct EditArgs {
     /// New title.
@@ -135,25 +180,57 @@ pub struct EditArgs {
     #[arg(long)]
     pub album_artist: Option<String>,
 
+    /// New recording / release date.
+    #[arg(long)]
+    pub date: Option<NaiveDate>,
+
+    /// New track number.
+    #[arg(long)]
+    pub track_number: Option<usize>,
+
+    /// New disc number.
+    #[arg(long)]
+    pub disc_number: Option<usize>,
+
     /// New genre.
     #[arg(long)]
     pub genre: Option<String>,
+
+    /// New composer.
+    #[arg(long)]
+    pub composer: Option<String>,
+
+    /// New lyricist.
+    #[arg(long)]
+    pub lyricist: Option<String>,
 
     /// Path to new front cover.
     #[arg(long)]
     pub front_cover: Option<PathBuf>,
 }
 
-// cli.rs 或 commands.rs
-impl From<FilterArgs> for TrackFilter {
-    fn from(f: FilterArgs) -> Self {
-        TrackFilter::new(
+impl TryFrom<FilterArgs> for TrackFilter {
+    type Error = McatError;
+
+    fn try_from(f: FilterArgs) -> Result<Self, Self::Error> {
+        let dates = f
+            .dates
+            .into_iter()
+            .map(|s| NaiveDate::from_str(&s))
+            .collect::<Result<_, chrono::ParseError>>()?;
+
+        Ok(TrackFilter::new(
             f.titles,
             f.artists,
             f.albums,
             f.album_artists,
+            dates,
+            f.track_numbers,
+            f.disc_numbers,
             f.genres,
+            f.composers,
+            f.lyricists,
             f.hashes,
-        )
+        ))
     }
 }

@@ -21,7 +21,7 @@ pub fn execute(path: impl AsRef<Path>, move_files: bool) -> McatResult<()> {
 
     let mut entities_count = 0;
     let mut imported_count = 0;
-    let mut repeated_track = Vec::new();
+    let mut repeated_tracks = Vec::new();
 
     let files = fs::read_dir(&path)?;
     for file in files {
@@ -34,9 +34,10 @@ pub fn execute(path: impl AsRef<Path>, move_files: bool) -> McatResult<()> {
             let stripped_data = strip_tags_from_file(&file_path, false)?.unwrap();
             let file_hash = get_hash_from_vec(&stripped_data);
 
+            // by default collect metadata from repo if file is found in it.
             if let Some(entry) = repo.query_track_by_hash(&file_hash) {
                 let Entry { tag_attr, .. } = entry;
-                repeated_track.push(tag_attr);
+                repeated_tracks.push(tag_attr);
             } else {
                 let tag = get_primary_tag(&file_path)?;
                 let mut tag_attr = TagAttributes::from(tag);
@@ -62,8 +63,8 @@ pub fn execute(path: impl AsRef<Path>, move_files: bool) -> McatResult<()> {
         "Import result: {} file(s) / directorie(s) found, {} supported file(s) imported.",
         entities_count, imported_count,
     );
-    println!("Repeated files (not imported): {}", repeated_track.len());
-    output::display_as_table(&repeated_track);
+    println!("Files already in repo: {}", repeated_tracks.len());
+    output::display_as_table(&repeated_tracks);
 
     Ok(())
 }

@@ -35,9 +35,9 @@ pub fn run() -> McatResult<()> {
         Commands::Remove {
             filter,
             remove_file,
-        } => remove::execute(TrackFilter::from(filter), remove_file),
+        } => remove::execute(TrackFilter::try_from(filter)?, remove_file),
 
-        Commands::Display { filter } => display::execute(TrackFilter::from(filter)),
+        Commands::Display { filter } => display::execute(TrackFilter::try_from(filter)?),
 
         Commands::Edit { track, edit } => edit::execute(track, edit),
 

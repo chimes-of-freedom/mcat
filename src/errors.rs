@@ -23,6 +23,8 @@ pub enum McatError {
     TomlDe(toml::de::Error),
     /// Wrapper for TOML serialization errors.
     TomlSer(toml::ser::Error),
+    /// Wrapper for date parsing errors.
+    DateParse(chrono::ParseError),
 }
 
 /// Convenience result alias with [`McatError`] as the error type.
@@ -39,6 +41,7 @@ impl fmt::Display for McatError {
             McatError::Tag(e) => write!(f, "tag operation error: {}", e),
             McatError::TomlDe(e) => write!(f, "failed to parse TOML: {}", e),
             McatError::TomlSer(e) => write!(f, "failed to serialize TOML: {}", e),
+            McatError::DateParse(e) => write!(f, "failed to parse date: {}", e),
         }
     }
 }
@@ -51,6 +54,7 @@ impl std::error::Error for McatError {
             McatError::Tag(e) => Some(e),
             McatError::TomlDe(e) => Some(e),
             McatError::TomlSer(e) => Some(e),
+            McatError::DateParse(e) => Some(e),
             _ => None,
         }
     }
@@ -77,5 +81,11 @@ impl From<toml::de::Error> for McatError {
 impl From<toml::ser::Error> for McatError {
     fn from(value: toml::ser::Error) -> Self {
         McatError::TomlSer(value)
+    }
+}
+
+impl From<chrono::ParseError> for McatError {
+    fn from(value: chrono::ParseError) -> Self {
+        McatError::DateParse(value)
     }
 }

@@ -40,20 +40,35 @@ pub fn execute(track: String, edit: EditArgs) -> McatResult<()> {
     let file_hash = entry.file_hash.clone();
 
     // update metadata except front cover
-    if let Some(title) = edit.title {
-        tag_attr.title = Some(title);
+    if edit.title.is_some() {
+        tag_attr.title = edit.title;
     }
-    if let Some(artist) = edit.artist {
-        tag_attr.artist = Some(artist);
+    if edit.artist.is_some() {
+        tag_attr.artist = edit.artist;
     }
-    if let Some(album) = edit.album {
-        tag_attr.album = Some(album);
+    if edit.album.is_some() {
+        tag_attr.album = edit.album;
     }
-    if let Some(album_artist) = edit.album_artist {
-        tag_attr.album_artist = Some(album_artist);
+    if edit.album_artist.is_some() {
+        tag_attr.album_artist = edit.album_artist;
     }
-    if let Some(genre) = edit.genre {
-        tag_attr.genre = Some(genre);
+    if edit.date.is_some() {
+        tag_attr.date = edit.date;
+    }
+    if edit.track_number.is_some() {
+        tag_attr.track_number = edit.track_number;
+    }
+    if edit.disc_number.is_some() {
+        tag_attr.disc_number = edit.disc_number;
+    }
+    if edit.genre.is_some() {
+        tag_attr.genre = edit.genre;
+    }
+    if edit.composer.is_some() {
+        tag_attr.composer = edit.composer;
+    }
+    if edit.lyricist.is_some() {
+        tag_attr.lyricist = edit.lyricist;
     }
 
     // update front cover
