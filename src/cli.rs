@@ -17,70 +17,18 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     /// Displays music metadata stored in the repository.
-    #[command(group(
-        ArgGroup::new("display_filter")
-            .required(true)
-            .args(["titles", "artists", "albums", "album_artists", "genres", "hashes"])
-    ))]
     Display {
-        /// Track title filter (repeatable).
-        #[arg(long = "title")]
-        titles: Vec<String>,
-
-        /// Track artist filter (repeatable).
-        #[arg(long = "artist")]
-        artists: Vec<String>,
-
-        /// Album title filter (repeatable).
-        #[arg(long = "album")]
-        albums: Vec<String>,
-
-        /// Album artist filter (repeatable).
-        #[arg(long = "album-artist")]
-        album_artists: Vec<String>,
-
-        /// Genre filter (repeatable).
-        #[arg(long = "genre")]
-        genres: Vec<String>,
-
-        /// File hash filter (repeatable).
-        #[arg(long = "hash")]
-        hashes: Vec<String>,
+        #[command(flatten)]
+        filter: FilterArgs,
     },
 
     /// Edits metadata of a track.
-    #[command(group(
-        ArgGroup::new("edit_group")
-            .required(true)
-            .args(["title", "artist", "album", "album_artist", "genre", "front_cover"])
-    ))]
     Edit {
         /// Hash or title of rack to edit.
         track: String,
 
-        /// New title.
-        #[arg(long)]
-        title: Option<String>,
-
-        /// New artist.
-        #[arg(long)]
-        artist: Option<String>,
-
-        /// New album.
-        #[arg(long)]
-        album: Option<String>,
-
-        /// New album artist.
-        #[arg(long)]
-        album_artist: Option<String>,
-
-        /// New genre.
-        #[arg(long)]
-        genre: Option<String>,
-
-        /// Path to new front cover.
-        #[arg(long)]
-        front_cover: Option<PathBuf>,
+        #[command(flatten)]
+        edit: EditArgs,
     },
 
     /// Initializes a repository from files under `media/`.
@@ -89,11 +37,11 @@ pub enum Commands {
     /// Checks consistency between files under `media/` and repository records.
     Check {
         /// Checks only whether files under `media/` are tracked.
-        #[arg(group = "filter", short, long, default_value = "false")]
+        #[arg(group = "check_filter_group", short, long, default_value = "false")]
         track: bool,
 
         /// Checks only whether tracked files still exist under `media/`.
-        #[arg(group = "filter", short, long, default_value = "false")]
+        #[arg(group = "check_filter_group", short, long, default_value = "false")]
         exist: bool,
 
         /// Repairs repository state according to check results.
@@ -106,35 +54,9 @@ pub enum Commands {
     },
 
     /// Removes tracks from the repository, optionally removing files.
-    #[command(group(
-        ArgGroup::new("remove_filter")
-            .required(true)
-            .args(["titles", "artists", "albums", "album_artists", "genres", "hashes"])
-    ))]
     Remove {
-        /// Track title filter (repeatable).
-        #[arg(long = "title")]
-        titles: Vec<String>,
-
-        /// Track artist filter (repeatable).
-        #[arg(long = "artist")]
-        artists: Vec<String>,
-
-        /// Album title filter (repeatable).
-        #[arg(long = "album")]
-        albums: Vec<String>,
-
-        /// Album artist filter (repeatable).
-        #[arg(long = "album-artist")]
-        album_artists: Vec<String>,
-
-        /// Genre filter (repeatable).
-        #[arg(long = "genre")]
-        genres: Vec<String>,
-
-        /// File hash filter (repeatable).
-        #[arg(long = "hash")]
-        hashes: Vec<String>,
+        #[command(flatten)]
+        filter: FilterArgs,
 
         /// Removes the media file as well.
         #[arg(short, long, default_value = "false")]
@@ -150,4 +72,72 @@ pub enum Commands {
         #[arg(short, long = "move")]
         move_files: bool,
     },
+}
+
+#[derive(clap::Args, Debug, Clone)]
+#[command(
+    group(
+        ArgGroup::new("filter_group")
+            .required(true)
+            .args(["titles", "artists", "albums", "album_artists", "genres", "hashes"])
+    )
+)]
+pub struct FilterArgs {
+    /// Track title filter (repeatable).
+    #[arg(long = "title")]
+    pub titles: Vec<String>,
+
+    /// Track artist filter (repeatable).
+    #[arg(long = "artist")]
+    pub artists: Vec<String>,
+
+    /// Album title filter (repeatable).
+    #[arg(long = "album")]
+    pub albums: Vec<String>,
+
+    /// Album artist filter (repeatable).
+    #[arg(long = "album-artist")]
+    pub album_artists: Vec<String>,
+
+    /// Genre filter (repeatable).
+    #[arg(long = "genre")]
+    pub genres: Vec<String>,
+
+    /// File hash filter (repeatable).
+    #[arg(long = "hash")]
+    pub hashes: Vec<String>,
+}
+
+#[derive(clap::Args, Debug, Clone)]
+#[command(
+    group(
+        ArgGroup::new("edit_group")
+            .required(true)
+            .args(["title", "artist", "album", "album_artist", "genre", "front_cover"])
+    )
+)]
+pub struct EditArgs {
+    /// New title.
+    #[arg(long)]
+    pub title: Option<String>,
+
+    /// New artist.
+    #[arg(long)]
+    pub artist: Option<String>,
+
+    /// New album.
+    #[arg(long)]
+    pub album: Option<String>,
+
+    /// New album artist.
+    #[arg(long)]
+    pub album_artist: Option<String>,
+
+    /// New genre.
+    #[arg(long)]
+    pub genre: Option<String>,
+
+    /// Path to new front cover.
+    #[arg(long)]
+    pub front_cover: Option<PathBuf>,
 }

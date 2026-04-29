@@ -2,7 +2,7 @@
 
 use clap::Parser;
 
-use crate::cli::{Cli, Commands};
+use crate::cli::{Cli, Commands, EditArgs, FilterArgs};
 use mcat::errors::McatResult;
 
 pub mod check;
@@ -32,12 +32,15 @@ pub fn run() -> McatResult<()> {
         } => check::execute(track, exist, repair, save_to),
 
         Commands::Remove {
-            titles,
-            artists,
-            albums,
-            album_artists,
-            genres,
-            hashes,
+            filter:
+                FilterArgs {
+                    titles,
+                    artists,
+                    albums,
+                    album_artists,
+                    genres,
+                    hashes,
+                },
             remove_file,
         } => remove::execute(
             titles,
@@ -50,22 +53,28 @@ pub fn run() -> McatResult<()> {
         ),
 
         Commands::Display {
-            titles,
-            artists,
-            albums,
-            album_artists,
-            genres,
-            hashes,
+            filter:
+                FilterArgs {
+                    titles,
+                    artists,
+                    albums,
+                    album_artists,
+                    genres,
+                    hashes,
+                },
         } => display::execute(titles, artists, albums, album_artists, genres, hashes),
 
         Commands::Edit {
             track,
-            title,
-            artist,
-            album,
-            album_artist,
-            genre,
-            front_cover,
+            edit:
+                EditArgs {
+                    title,
+                    artist,
+                    album,
+                    album_artist,
+                    genre,
+                    front_cover,
+                },
         } => edit::execute(
             track,
             title,
