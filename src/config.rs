@@ -10,6 +10,7 @@ static CONFIG: OnceLock<Config> = OnceLock::new();
 
 #[derive(Debug)]
 pub struct Config {
+    mcat_dir: PathBuf,
     repo_file: PathBuf,
     cover_dir: PathBuf,
     lrc_dir: PathBuf,
@@ -19,6 +20,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
+            mcat_dir: PathBuf::from(".mcat/"),
             repo_file: PathBuf::from(".mcat/repo.toml"),
             cover_dir: PathBuf::from(".mcat/images/"),
             lrc_dir: PathBuf::from(".mcat/lyrics/"),
@@ -36,7 +38,7 @@ pub fn init(config: Option<Config>) -> McatResult<()> {
         Some(config) => config,
         None => Config::default(),
     };
-    fs::remove_dir_all(".mcat/")?;
+    fs::remove_dir_all(&config.mcat_dir)?;
     fs::create_dir_all(&config.cover_dir)?;
     fs::create_dir_all(&config.lrc_dir)?;
 
