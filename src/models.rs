@@ -79,7 +79,8 @@ impl From<Tag> for TagAttributes {
             .map(|cover| Image {
                 mime_type: cover.mime_type().map(|m| m.to_string()),
                 description: cover.description().map(|s| s.to_string()),
-                data: ImageData::Inline(cover.data().to_vec()),
+                file_name: String::new(),
+                data: cover.data().to_vec(),
             });
 
         TagAttributes {
@@ -114,71 +115,42 @@ impl From<Tag> for TagAttributes {
     }
 }
 
-/// Image fields extracted from a media file tag.
+/// Cover image associated with a track.
+///
+/// `file_name` is the canonical identifier used for persistence. `data` holds
+/// raw image bytes only transiently — it is populated when an image is first
+/// extracted from a tag and cleared once written to disk.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Image {
     pub mime_type: Option<String>,
     pub description: Option<String>,
-    #[serde(flatten)]
-    pub data: ImageData,
-}
-
-/// Enum for image payload. [`ImageData::Inline`] represents the full image while
-/// [`ImageData::Linked`] represents a link to file on disk.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum ImageData {
-    /// Inline data.
+    pub file_name: String,
     #[serde(skip)]
-    Inline(Vec<u8>),
-
-    /// External file name.
-    Linked { file_name: String },
+    pub data: Vec<u8>,
 }
 
 impl Image {
-    pub fn into_inline(self, data: Vec<u8>) -> Self {
-        Self {
-            data: ImageData::Inline(data),
-            ..self
+    /// Flushes buffered image bytes to the cover directory and populates
+    /// [`Self::file_name`]. No-op when `data` is already empty.
+    pub fn flush(&mut self, file_hash: &str) -> McatResult<()> {
+        if !self.data.is_empty() {
+            let ext = self
+                .mime_type
+                .as_deref()
+                .and_then(|m| m.split('/').next_back())
+                .unwrap_or("bin");
+
+            let file_name = format!("{}.{}", file_hash, ext);
+            let mut image_path = config::cover_dir_path();
+            image_path.push(&file_name);
+
+            std::fs::write(&image_path, &self.data)?;
+
+            self.file_name = file_name;
+            self.data.clear();
         }
-    }
 
-    pub fn into_linked(self, file_name: String) -> Self {
-        Self {
-            data: ImageData::Linked { file_name },
-            ..self
-        }
-    }
-
-    /// Converts [`Image::data`] from [`ImageData::Inline`] to
-    /// [`ImageData::Linked`] and writes data back to disk. Does nothing when
-    /// [`Image::data`] is already a [`ImageData::Linked`].
-    ///
-    /// # Errors
-    ///
-    /// Returns I/O related errors when writing data back to disk.
-    pub fn linked_and_to_disk(self, file_hash: &str) -> McatResult<Image> {
-        match &self.data {
-            ImageData::Inline(data) => {
-                // Extract extension from mime type (e.g., "image/jpeg" -> "jpeg")
-                let ext = self
-                    .mime_type
-                    .as_deref()
-                    .and_then(|m| m.split('/').next_back())
-                    .unwrap_or("bin");
-
-                let file_name = format!("{}.{}", file_hash, ext);
-                let mut image_path = config::cover_dir_path();
-                image_path.push(&file_name);
-
-                // Write image data back to disk
-                std::fs::write(&image_path, data)?;
-
-                Ok(self.into_linked(file_name))
-            }
-            _ => Ok(self),
-        }
+        Ok(())
     }
 }
 

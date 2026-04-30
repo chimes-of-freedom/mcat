@@ -6,7 +6,7 @@ use crate::{
     cli::EditArgs,
     config,
     errors::{McatError, McatResult},
-    models::{Image, ImageData},
+    models::Image,
     repos::{Repo, toml_repo::TomlDb},
     services::{infer_mime_type, is_valid_blake3_hex},
 };
@@ -83,13 +83,10 @@ pub fn execute(track: String, edit: EditArgs) -> McatResult<()> {
 
             // remove old image file if not covered by new image file
             if let Some(old_image) = &tag_attr.front_cover
-                && let ImageData::Linked {
-                    file_name: old_image_name,
-                } = &old_image.data
-                && old_image_name != &new_image_name
+                && old_image.file_name != new_image_name
             {
                 let mut old_image_path = config::cover_dir_path();
-                old_image_path.push(old_image_name);
+                old_image_path.push(&old_image.file_name);
                 fs::remove_file(&old_image_path)?;
             }
 
@@ -97,14 +94,13 @@ pub fn execute(track: String, edit: EditArgs) -> McatResult<()> {
             tag_attr.front_cover = Some(Image {
                 mime_type: Some(new_mime_type.to_string()),
                 description: None,
-                data: ImageData::Linked {
-                    file_name: new_image_name,
-                },
+                file_name: new_image_name,
+                data: Vec::new(),
             });
         }
     }
 
-    repo.insert_track(file_hash, entry.tag_attr);
+    repo.insert_track(file_hash, entry.tag_attr)?;
 
     repo.persist()
 }

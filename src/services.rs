@@ -186,7 +186,7 @@ pub fn scan_media(
         if file_type.is_file() && is_file_supported(&file_path)? {
             // NOTE: get the tag before stripping it from file!
             let tag = get_primary_tag(&file_path)?;
-            let mut tag_attr = TagAttributes::from(tag);
+            let tag_attr = TagAttributes::from(tag);
 
             let file_hash = if saved {
                 strip_tags_from_file(&file_path, saved)?;
@@ -196,13 +196,7 @@ pub fn scan_media(
                 get_hash_from_vec(&stripped_data)
             };
 
-            // NOTE: parse `ImageData::Inline` to `ImageData::Linked` before inserting
-            // a track!
-            if let Some(image) = tag_attr.front_cover {
-                tag_attr.front_cover = Some(image.linked_and_to_disk(&file_hash)?);
-            }
-
-            repo.insert_track(file_hash, tag_attr);
+            repo.insert_track(file_hash, tag_attr)?;
         }
     }
 

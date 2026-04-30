@@ -16,8 +16,13 @@ pub trait Repo {
     where
         Self: Sized;
 
-    /// Inserts a track into the repository.
-    fn insert_track(&mut self, file_hash: String, tag_attr: TagAttributes);
+    /// Inserts a track into the repository, flushing any inline cover image
+    /// data to disk first.
+    ///
+    /// # Errors
+    ///
+    /// Returns I/O errors when writing the cover image fails.
+    fn insert_track(&mut self, file_hash: String, tag_attr: TagAttributes) -> McatResult<()>;
 
     /// Removes a track from the repository.
     ///

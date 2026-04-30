@@ -40,12 +40,8 @@ pub fn execute(path: impl AsRef<Path>, move_files: bool) -> McatResult<()> {
                 repeated_tracks.push(tag_attr);
             } else {
                 let tag = get_primary_tag(&file_path)?;
-                let mut tag_attr = TagAttributes::from(tag);
-                if let Some(image) = tag_attr.front_cover {
-                    tag_attr.front_cover = Some(image.linked_and_to_disk(&file_hash)?);
-                }
-
-                repo.insert_track(file_hash, tag_attr);
+                let tag_attr = TagAttributes::from(tag);
+                repo.insert_track(file_hash, tag_attr)?;
 
                 if move_files {
                     fs::rename(&file_path, config::media_dir_path().join(&file_name))?;

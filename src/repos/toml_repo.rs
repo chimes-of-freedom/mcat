@@ -85,10 +85,17 @@ impl TomlDb {
         Ok(())
     }
 
-    /// Inserts an entry into the repository.
-    pub fn insert_entry(&mut self, entry: Entry) {
+    /// Inserts an entry into the repository, flushing any inline cover image
+    /// data to disk first.
+    pub fn insert_entry(&mut self, mut entry: Entry) -> McatResult<()> {
+        if let Some(ref mut image) = entry.tag_attr.front_cover {
+            image.flush(&entry.file_hash)?;
+        }
+
         let key = entry.file_hash.clone();
         self.entries.insert(key, entry);
+
+        Ok(())
     }
 
     /// Removes an entry by key.
@@ -101,11 +108,7 @@ impl TomlDb {
             return Ok(Some(entry));
         };
 
-        let ImageData::Linked { file_name } = &image.data else {
-            return Ok(Some(entry));
-        };
-
-        fs::remove_file(config::cover_dir_path().join(file_name))?;
+        fs::remove_file(config::cover_dir_path().join(&image.file_name))?;
 
         Ok(Some(entry))
     }
@@ -133,11 +136,11 @@ impl Repo for TomlDb {
         Self::new()
     }
 
-    fn insert_track(&mut self, file_hash: String, tag_attr: TagAttributes) {
+    fn insert_track(&mut self, file_hash: String, tag_attr: TagAttributes) -> McatResult<()> {
         self.insert_entry(Entry {
             file_hash,
             tag_attr,
-        });
+        })
     }
 
     fn remove_track(&mut self, file_hash: &str) -> McatResult<()> {
