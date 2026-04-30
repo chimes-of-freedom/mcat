@@ -1,9 +1,6 @@
 //! `edit` command handler for updating track metadata records.
 
-use std::{
-    fs,
-    path::{Path, PathBuf},
-};
+use std::fs;
 
 use crate::{
     cli::EditArgs,
@@ -39,7 +36,7 @@ pub fn execute(track: String, edit: EditArgs) -> McatResult<()> {
     let tag_attr = &mut entry.tag_attr;
     let file_hash = entry.file_hash.clone();
 
-    // update metadata except front cover
+    // update metadata which doesn't need to be stored to files
     if edit.title.is_some() {
         tag_attr.title = edit.title;
     }
@@ -73,28 +70,27 @@ pub fn execute(track: String, edit: EditArgs) -> McatResult<()> {
 
     // update front cover
     if let Some(new_front_cover) = edit.front_cover {
-        let new_front_cover_path =
-            PathBuf::from(<PathBuf as AsRef<Path>>::as_ref(&new_front_cover));
-
         // ensure new image exists
-        if new_front_cover_path.try_exists()? && new_front_cover_path.is_file() {
+        if new_front_cover.try_exists()? && new_front_cover.is_file() {
             // generate path to new image
-            let new_mime_type = infer_mime_type(&new_front_cover_path)?;
+            let new_mime_type = infer_mime_type(&new_front_cover)?;
             let new_ext = new_mime_type.split('/').next_back().unwrap_or("bin");
             let new_image_name = format!("{}.{}", &file_hash, new_ext);
             let new_image_path = config::cover_dir_path().join(&new_image_name);
 
             // copy new image file to images folder
-            fs::copy(&new_front_cover_path, &new_image_path)?;
+            fs::copy(&new_front_cover, &new_image_path)?;
 
-            // remove old image file if not not covered by new image file
-            if let Some(image) = &tag_attr.front_cover
-                && let ImageData::Linked { file_name } = &image.data
-                && file_name != &new_image_name
+            // remove old image file if not covered by new image file
+            if let Some(old_image) = &tag_attr.front_cover
+                && let ImageData::Linked {
+                    file_name: old_image_name,
+                } = &old_image.data
+                && old_image_name != &new_image_name
             {
-                let mut old_file_path = config::cover_dir_path();
-                old_file_path.push(file_name);
-                fs::remove_file(&old_file_path)?;
+                let mut old_image_path = config::cover_dir_path();
+                old_image_path.push(old_image_name);
+                fs::remove_file(&old_image_path)?;
             }
 
             // update `tag_attr.front_cover`
