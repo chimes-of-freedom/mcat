@@ -1,6 +1,5 @@
 //! Reusable service-layer utilities for media and metadata workflows.
 
-use crate::config;
 use crate::errors::{McatError, McatResult};
 use crate::models::TagAttributes;
 use crate::repos::Repo;
@@ -168,24 +167,6 @@ pub fn scan_media(
     saved: bool,
 ) -> McatResult<()> {
     let files = fs::read_dir(media_dir)?;
-
-    // Create cover directory if not exists
-    let cover_dir = config::cover_dir_path();
-    if cover_dir.exists() && !cover_dir.is_dir() {
-        fs::remove_file(&cover_dir)?;
-    }
-    if !cover_dir.exists() {
-        fs::create_dir_all(&cover_dir)?;
-    }
-
-    // Create lyrics directory if not exists
-    let lrc_dir = config::lrc_dir_path();
-    if lrc_dir.exists() && !lrc_dir.is_dir() {
-        fs::remove_file(&lrc_dir)?;
-    }
-    if !lrc_dir.exists() {
-        fs::create_dir_all(&lrc_dir)?;
-    }
 
     for file in files {
         let file = file?;

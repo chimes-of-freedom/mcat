@@ -1,7 +1,10 @@
 //! Path-related configuration functions of mcat.
 
+use std::fs;
 use std::path::PathBuf;
 use std::sync::OnceLock;
+
+use crate::errors::McatResult;
 
 static CONFIG: OnceLock<Config> = OnceLock::new();
 
@@ -25,11 +28,21 @@ impl Default for Config {
 }
 
 fn get() -> &'static Config {
-    CONFIG.get_or_init(Config::default)
+    CONFIG.get().expect("[FATAL] try to get config before initializing")
 }
 
-pub fn init(config: Config) {
+pub fn init(config: Option<Config>) -> McatResult<()> {
+    let config = match config {
+        Some(config) => config,
+        None => Config::default(),
+    };
+    fs::remove_dir_all(".mcat/")?;
+    fs::create_dir_all(&config.cover_dir)?;
+    fs::create_dir_all(&config.lrc_dir)?;
+
     CONFIG.set(config).expect("config already initialized");
+
+    Ok(())
 }
 
 /// Returns path to repository file.
