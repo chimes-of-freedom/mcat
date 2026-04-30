@@ -88,6 +88,9 @@ impl TomlDb {
     /// Inserts an entry into the repository, flushing any inline cover image
     /// data to disk first.
     pub fn insert_entry(&mut self, mut entry: Entry) -> McatResult<()> {
+        if let Some(ref mut lrc) = entry.tag_attr.lyrics {
+            lrc.flush(&entry.file_hash)?;
+        }
         if let Some(ref mut image) = entry.tag_attr.front_cover {
             image.flush(&entry.file_hash)?;
         }
@@ -104,11 +107,12 @@ impl TomlDb {
             return Ok(None);
         };
 
-        let Some(image) = &entry.tag_attr.front_cover else {
-            return Ok(Some(entry));
-        };
-
-        fs::remove_file(config::cover_dir_path().join(&image.file_name))?;
+        if let Some(lrc) = &entry.tag_attr.lyrics {
+            fs::remove_file(config::lrc_dir_path().join(&lrc.file_name))?;
+        }
+        if let Some(image) = &entry.tag_attr.front_cover {
+            fs::remove_file(config::cover_dir_path().join(&image.file_name))?;
+        }
 
         Ok(Some(entry))
     }

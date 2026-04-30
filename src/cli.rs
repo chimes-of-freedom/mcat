@@ -204,7 +204,11 @@ pub struct EditArgs {
     #[arg(long)]
     pub lyricist: Option<String>,
 
-    /// Path to new front cover.
+    /// Path to new lyrics text file.
+    #[arg(long)]
+    pub lyrics: Option<PathBuf>,
+
+    /// Path to new front cover image file.
     #[arg(long)]
     pub front_cover: Option<PathBuf>,
 }

@@ -1,6 +1,7 @@
 //! Core domain models used across commands and services.
 
 use std::collections::BTreeSet;
+use std::fs;
 use std::str::FromStr;
 
 use chrono::NaiveDate;
@@ -45,6 +46,10 @@ pub struct TagAttributes {
     /// Lyricist.
     pub lyricist: Option<String>,
 
+    /// Lyrics.
+    #[tabled(skip)]
+    pub lyrics: Option<Lyrics>,
+
     /// Front Cover.
     #[tabled(skip)]
     pub front_cover: Option<Image>,
@@ -66,6 +71,7 @@ impl TagAttributes {
                 genre: None,
                 composer: None,
                 lyricist: None,
+                lyrics: None,
                 front_cover: None,
             }
         )
@@ -74,6 +80,10 @@ impl TagAttributes {
 
 impl From<Tag> for TagAttributes {
     fn from(tag: Tag) -> TagAttributes {
+        let lyrics = tag.get_string(ItemKey::Lyrics).map(|s| Lyrics {
+            file_name: "".to_string(),
+            data: s.to_string(),
+        });
         let front_cover = tag
             .get_picture_type(PictureType::CoverFront)
             .map(|cover| Image {
@@ -110,8 +120,40 @@ impl From<Tag> for TagAttributes {
 
             lyricist: tag.get_string(ItemKey::Lyricist).map(str::to_string),
 
+            lyrics,
+
             front_cover,
         }
+    }
+}
+
+/// Lyrics associated with a track.
+///
+/// `file_name` is the canonical identifier used for persistence. `data` holds
+/// lyrics text only transiently — it is populated when lyrics are first
+/// extracted from a tag and cleared once written to disk.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Lyrics {
+    pub file_name: String,
+    pub data: String,
+}
+
+impl Lyrics {
+    /// Flushes buffered lyrics text to the lyrics directory and populates
+    /// [`Self::file_name`]. No-op when `data` is already empty.
+    pub fn flush(&mut self, file_hash: &str) -> McatResult<()> {
+        if !self.data.is_empty() {
+            let lrc_name = format!("{file_hash}.lrc");
+            let mut lrc_path = config::lrc_dir_path();
+            lrc_path.push(&lrc_name);
+
+            fs::write(&lrc_path, &self.data)?;
+
+            self.file_name = lrc_name;
+            self.data.clear();
+        }
+
+        Ok(())
     }
 }
 

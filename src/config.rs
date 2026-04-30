@@ -9,6 +9,7 @@ static CONFIG: OnceLock<Config> = OnceLock::new();
 pub struct Config {
     repo_file: PathBuf,
     cover_dir: PathBuf,
+    lrc_dir: PathBuf,
     media_dir: PathBuf,
 }
 
@@ -17,6 +18,7 @@ impl Default for Config {
         Config {
             repo_file: PathBuf::from(".mcat/repo.toml"),
             cover_dir: PathBuf::from(".mcat/images/"),
+            lrc_dir: PathBuf::from(".mcat/lyrics/"),
             media_dir: PathBuf::from("media/"),
         }
     }
@@ -45,6 +47,11 @@ pub fn repo_backup_file_path() -> PathBuf {
 /// Returns path to cover images directory.
 pub fn cover_dir_path() -> PathBuf {
     get().cover_dir.clone()
+}
+
+/// Returns path to lyrics directory.
+pub fn lrc_dir_path() -> PathBuf {
+    get().lrc_dir.clone()
 }
 
 /// Returns path to media directory.

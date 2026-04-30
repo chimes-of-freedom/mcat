@@ -6,7 +6,7 @@ use crate::{
     cli::EditArgs,
     config,
     errors::{McatError, McatResult},
-    models::Image,
+    models::{Image, Lyrics},
     repos::{Repo, toml_repo::TomlDb},
     services::{infer_mime_type, is_valid_blake3_hex},
 };
@@ -68,6 +68,33 @@ pub fn execute(track: String, edit: EditArgs) -> McatResult<()> {
         tag_attr.lyricist = edit.lyricist;
     }
 
+    // update lyrics
+    if let Some(new_lrc) = edit.lyrics {
+        // ensure new lyrics file exists
+        if new_lrc.try_exists()? && new_lrc.is_file() {
+            // generate path to new lyrics
+            let new_lrc_name = format!("{}.lrc", &file_hash);
+            let new_lrc_path = config::lrc_dir_path().join(&new_lrc_name);
+
+            // copy new lyrics file to lyrics folder
+            fs::copy(&new_lrc, &new_lrc_path)?;
+
+            // remove old lyrics file if not covered by the new one
+            if let Some(old_lrc) = &tag_attr.lyrics
+                && old_lrc.file_name == new_lrc_name
+            {
+                let old_lrc_path = config::lrc_dir_path().join(&old_lrc.file_name);
+                fs::remove_file(&old_lrc_path)?;
+            }
+
+            // update `tag_attr.lyrics`
+            tag_attr.lyrics = Some(Lyrics {
+                file_name: new_lrc_name,    // not necessary
+                data: "".to_string(),
+            });
+        }
+    }
+
     // update front cover
     if let Some(new_front_cover) = edit.front_cover {
         // ensure new image exists
@@ -81,7 +108,7 @@ pub fn execute(track: String, edit: EditArgs) -> McatResult<()> {
             // copy new image file to images folder
             fs::copy(&new_front_cover, &new_image_path)?;
 
-            // remove old image file if not covered by new image file
+            // remove old image file if not covered by the new one
             if let Some(old_image) = &tag_attr.front_cover
                 && old_image.file_name != new_image_name
             {

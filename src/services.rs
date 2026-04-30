@@ -178,6 +178,15 @@ pub fn scan_media(
         fs::create_dir_all(&cover_dir)?;
     }
 
+    // Create lyrics directory if not exists
+    let lrc_dir = config::lrc_dir_path();
+    if lrc_dir.exists() && !lrc_dir.is_dir() {
+        fs::remove_file(&lrc_dir)?;
+    }
+    if !lrc_dir.exists() {
+        fs::create_dir_all(&lrc_dir)?;
+    }
+
     for file in files {
         let file = file?;
         let file_type = file.file_type()?;
