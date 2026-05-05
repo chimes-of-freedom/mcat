@@ -78,14 +78,19 @@ Options:
 $ mcat remove --help
 Removes tracks from the repository, optionally removing files
 
-Usage: mcat.exe remove [OPTIONS] <--title <TITLES>|--artist <ARTISTS>|--album <ALBUMS>|--album-artist <ALBUM_ARTISTS>|--genre <GENRES>|--hash <HASHES>>
+Usage: mcat.exe remove [OPTIONS] <--title <TITLES>|--artist <ARTISTS>|--album <ALBUMS>|--album-artist <ALBUM_ARTISTS>|--date <DATES>|--track-number <TRACK_NUMBERS>|--disc-number <DISC_NUMBERS>|--genre <GENRES>|--composer <COMPOSERS>|--lyricist <LYRICISTS>|--hash <HASHES>>
 
 Options:
       --title <TITLES>                Track title filter (repeatable)
       --artist <ARTISTS>              Track artist filter (repeatable)
       --album <ALBUMS>                Album title filter (repeatable)
       --album-artist <ALBUM_ARTISTS>  Album artist filter (repeatable)
+      --date <DATES>                  Recording / Release date filter (repeatable)
+      --track-number <TRACK_NUMBERS>  Track number filter (repeatable)
+      --disc-number <DISC_NUMBERS>    Disc number filter (repeatable)
       --genre <GENRES>                Genre filter (repeatable)
+      --composer <COMPOSERS>          Composer filter (repeatable)
+      --lyricist <LYRICISTS>          Lyricist filter (repeatable)
       --hash <HASHES>                 File hash filter (repeatable)
   -r, --remove-file                   Removes the media file as well
   -h, --help                          Print help
@@ -97,14 +102,19 @@ Options:
 $ mcat display --help
 Displays music metadata stored in the repository
 
-Usage: mcat.exe display <--title <TITLES>|--artist <ARTISTS>|--album <ALBUMS>|--album-artist <ALBUM_ARTISTS>|--genre <GENRES>|--hash <HASHES>>
+Usage: mcat.exe display <--title <TITLES>|--artist <ARTISTS>|--album <ALBUMS>|--album-artist <ALBUM_ARTISTS>|--date <DATES>|--track-number <TRACK_NUMBERS>|--disc-number <DISC_NUMBERS>|--genre <GENRES>|--composer <COMPOSERS>|--lyricist <LYRICISTS>|--hash <HASHES>>
 
 Options:
       --title <TITLES>                Track title filter (repeatable)
       --artist <ARTISTS>              Track artist filter (repeatable)
       --album <ALBUMS>                Album title filter (repeatable)
       --album-artist <ALBUM_ARTISTS>  Album artist filter (repeatable)
+      --date <DATES>                  Recording / Release date filter (repeatable)
+      --track-number <TRACK_NUMBERS>  Track number filter (repeatable)
+      --disc-number <DISC_NUMBERS>    Disc number filter (repeatable)
       --genre <GENRES>                Genre filter (repeatable)
+      --composer <COMPOSERS>          Composer filter (repeatable)
+      --lyricist <LYRICISTS>          Lyricist filter (repeatable)
       --hash <HASHES>                 File hash filter (repeatable)
   -h, --help                          Print help
 ```
@@ -115,7 +125,7 @@ Options:
 $ mcat edit --help
 Edits metadata of a track
 
-Usage: mcat.exe edit <--title <TITLE>|--artist <ARTIST>|--album <ALBUM>|--album-artist <ALBUM_ARTIST>|--genre <GENRE>|--front-cover <FRONT_COVER>> <TRACK>
+Usage: mcat.exe edit [OPTIONS] <--title <TITLE>|--artist <ARTIST>|--album <ALBUM>|--album-artist <ALBUM_ARTIST>|--date <DATE>|--track-number <TRACK_NUMBER>|--disc-number <DISC_NUMBER>|--genre <GENRE>|--composer <COMPOSER>|--lyricist <LYRICIST>|--front-cover <FRONT_COVER>> <TRACK>
 
 Arguments:
   <TRACK>  Hash or title of rack to edit
@@ -125,8 +135,14 @@ Options:
       --artist <ARTIST>              New artist
       --album <ALBUM>                New album
       --album-artist <ALBUM_ARTIST>  New album artist
+      --date <DATE>                  New recording / release date
+      --track-number <TRACK_NUMBER>  New track number
+      --disc-number <DISC_NUMBER>    New disc number
       --genre <GENRE>                New genre
-      --front-cover <FRONT_COVER>    Path to new front cover
+      --composer <COMPOSER>          New composer
+      --lyricist <LYRICIST>          New lyricist
+      --lyrics <LYRICS>              Path to new lyrics text file
+      --front-cover <FRONT_COVER>    Path to new front cover image file
   -h, --help                         Print help
 ```
 
@@ -143,7 +159,7 @@ Arguments:
 
 Options:
   -m, --move  Move files instead of copying them
-  -h, --help  Print hel
+  -h, --help  Print help
 ```
 
 ## Todo List
