@@ -1,6 +1,5 @@
 //! Path-related configuration functions of mcat.
 
-use std::fs;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 
@@ -30,21 +29,18 @@ impl Default for Config {
 }
 
 fn get() -> &'static Config {
-    CONFIG.get().expect("[FATAL] try to get config before initializing")
+    CONFIG.get_or_init(Config::default)
 }
 
 pub fn init(config: Option<Config>) -> McatResult<()> {
-    let config = match config {
-        Some(config) => config,
-        None => Config::default(),
-    };
-    fs::remove_dir_all(&config.mcat_dir)?;
-    fs::create_dir_all(&config.cover_dir)?;
-    fs::create_dir_all(&config.lrc_dir)?;
-
-    CONFIG.set(config).expect("config already initialized");
-
+    let config = config.unwrap_or_default();
+    let _ = CONFIG.set(config);
     Ok(())
+}
+
+/// Returns path to mcat data directory.
+pub fn mcat_dir_path() -> PathBuf {
+    get().mcat_dir.clone()
 }
 
 /// Returns path to repository file.

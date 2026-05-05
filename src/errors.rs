@@ -3,6 +3,8 @@
 use std::fmt;
 use std::io;
 
+use crate::config;
+
 /// Unified error type used across the crate.
 #[derive(Debug)]
 pub enum McatError {
@@ -14,6 +16,8 @@ pub enum McatError {
     TrackNotFound,
     /// No tag attributes were provided for an update.
     AttrEmpty,
+    /// The working directory is already initialized.
+    RepeatedInit,
 
     /// Wrapper for I/O errors.
     Io(io::Error),
@@ -37,6 +41,11 @@ impl fmt::Display for McatError {
             McatError::TagNotFound => write!(f, "no tag found in media file"),
             McatError::TrackNotFound => write!(f, "track not found in repo's database"),
             McatError::AttrEmpty => write!(f, "no tag attributes provided"),
+            McatError::RepeatedInit => write!(
+                f,
+                "there's already a file or directory named {}",
+                config::media_dir_path().display()
+            ),
             McatError::Io(e) => write!(f, "I/O error: {}", e),
             McatError::Tag(e) => write!(f, "tag operation error: {}", e),
             McatError::TomlDe(e) => write!(f, "failed to parse TOML: {}", e),

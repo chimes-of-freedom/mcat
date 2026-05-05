@@ -89,7 +89,7 @@ pub fn execute(track: String, edit: EditArgs) -> McatResult<()> {
 
             // update `tag_attr.lyrics`
             tag_attr.lyrics = Some(Lyrics {
-                file_name: new_lrc_name,    // not necessary
+                file_name: new_lrc_name, // not necessary
                 data: "".to_string(),
             });
         }
