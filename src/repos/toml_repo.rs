@@ -36,7 +36,7 @@ impl TryFrom<PathBuf> for TomlDb {
     ///
     /// - Returns [`McatError::RepoNotFound`] if repo file does not exist.
     /// - Returns I/O errors when reading the file and TOML deserialization
-    /// errors when parsing content.
+    ///   errors when parsing content.
     fn try_from(toml_path: PathBuf) -> McatResult<Self> {
         let db_string = match fs::read_to_string(toml_path) {
             Ok(db_string) => db_string,

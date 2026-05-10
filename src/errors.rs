@@ -39,7 +39,11 @@ impl fmt::Display for McatError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             McatError::RepoNotFound => {
-                write!(f, "Repository file not found: {:?}", config::repo_file_path())
+                write!(
+                    f,
+                    "Repository file not found: {:?}",
+                    config::repo_file_path()
+                )
             }
             McatError::FileNotFound(file_path) => write!(f, "file not found: {file_path:?}"),
             McatError::TagNotFound(file_path) => {
