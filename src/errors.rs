@@ -9,6 +9,8 @@ use crate::config;
 /// Unified error type used across the crate.
 #[derive(Debug)]
 pub enum McatError {
+    /// Repository file does not exist.
+    RepoNotFound,
     /// The target file does not exist.
     FileNotFound(PathBuf),
     /// No readable metadata tag was found in a media file.
@@ -36,6 +38,9 @@ pub type McatResult<T> = Result<T, McatError>;
 impl fmt::Display for McatError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            McatError::RepoNotFound => {
+                write!(f, "Repository file not found: {:?}", config::repo_file_path())
+            }
             McatError::FileNotFound(file_path) => write!(f, "file not found: {file_path:?}"),
             McatError::TagNotFound(file_path) => {
                 write!(f, "no tag found in media file: {file_path:?}")
