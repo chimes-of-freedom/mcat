@@ -28,7 +28,7 @@ mcat 采用“子命令 + 选项”格式的命令风格。
 $ mcat --help
 mcat is a music cataloging tool aimed at providing a graceful way to manage music files along with their metadata.
 
-Usage: mcat.exe <COMMAND>
+Usage: mcat <COMMAND>
 
 Commands:
   display  Displays music metadata stored in the repository
@@ -53,7 +53,7 @@ Options:
 $ mcat init --help
 Initializes a repository from files under `media/`
 
-Usage: mcat.exe init
+Usage: mcat init
 
 Options:
   -h, --help  Print help
@@ -65,7 +65,7 @@ Options:
 $ mcat check --help
 Checks consistency between files under `media/` and repository records
 
-Usage: mcat.exe check [OPTIONS]
+Usage: mcat check [OPTIONS]
 
 Options:
   -t, --track                  Checks only whether files under `media/` are tracked
@@ -81,7 +81,7 @@ Options:
 $ mcat remove --help
 Removes tracks from the repository, optionally removing files
 
-Usage: mcat.exe remove [OPTIONS] <--title <title>|--artist <artist>|--album <album>|--album-artist <album-artist>|--date <date>|--track-number <track-number>|--disc-number <disc-number>|--genre <genre>|--composer <composer>|--lyricist <lyricist>|--hash <hash>>
+Usage: mcat remove <OPTIONS>
 
 Options:
       --title <title>                Track title filter
@@ -105,7 +105,7 @@ Options:
 $ mcat display --help
 Displays music metadata stored in the repository
 
-Usage: mcat.exe display <--title <title>|--artist <artist>|--album <album>|--album-artist <album-artist>|--date <date>|--track-number <track-number>|--disc-number <disc-number>|--genre <genre>|--composer <composer>|--lyricist <lyricist>|--hash <hash>>
+Usage: mcat display <OPTIONS>
 
 Options:
       --title <title>                Track title filter
@@ -128,7 +128,7 @@ Options:
 $ mcat edit --help
 Edits metadata of a track
 
-Usage: mcat.exe edit [OPTIONS] <--title <title>|--artist <artist>|--album <album>|--album-artist <album-artist>|--date <date>|--track-number <track-number>|--disc-number <disc-number>|--genre <genre>|--composer <composer>|--lyricist <lyricist>|--front-cover <front-cover>> <track>
+Usage: mcat edit <OPTIONS> <track>
 
 Arguments:
   <track>  Hash or title of rack to edit
@@ -155,7 +155,7 @@ Options:
 $ mcat import --help
 Imports music files from a directory
 
-Usage: mcat.exe import [OPTIONS] <path>
+Usage: mcat import [OPTIONS] <path>
 
 Arguments:
   <path>  Path to directory

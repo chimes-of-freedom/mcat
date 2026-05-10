@@ -24,12 +24,14 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     /// Displays music metadata stored in the repository.
+    #[command(override_usage = "mcat displiay <OPTIONS>")]
     Display {
         #[command(flatten)]
         filter: FilterArgs,
     },
 
     /// Edits metadata of a track.
+    #[command(override_usage = "mcat edit <OPTIONS> <track>")]
     Edit {
         /// Hash or title of rack to edit.
         #[arg(value_name = "track")]
@@ -62,6 +64,7 @@ pub enum Commands {
     },
 
     /// Removes tracks from the repository, optionally removing files.
+    #[command(override_usage = "mcat remove <OPTIONS>")]
     Remove {
         #[command(flatten)]
         filter: FilterArgs,
