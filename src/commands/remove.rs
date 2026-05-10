@@ -21,7 +21,7 @@ pub fn execute(filter: TrackFilter, remove_file: bool) -> McatResult<()> {
     let matched_hashes = filter.apply(&repo);
 
     if matched_hashes.is_empty() {
-        return Err(McatError::TrackNotFound);
+        return Err(McatError::TrackNotFound("".to_string()));
     }
 
     for file_hash in &matched_hashes {

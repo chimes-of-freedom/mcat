@@ -7,7 +7,7 @@ use crate::repos::Repo;
 
 use std::fs::{self, File};
 use std::io::{self, Cursor, Read, Seek};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use blake3::Hasher;
 use lofty::config::WriteOptions;
@@ -31,7 +31,7 @@ pub fn get_primary_tag(file_path: impl AsRef<Path>) -> McatResult<Tag> {
     let file_path = file_path.as_ref();
 
     if !file_path.is_file() {
-        return Err(McatError::FileNotFound);
+        return Err(McatError::FileNotFound(PathBuf::from(file_path)));
     }
 
     let tagged_file = get_tagged_file(file_path)?;
@@ -40,7 +40,7 @@ pub fn get_primary_tag(file_path: impl AsRef<Path>) -> McatResult<Tag> {
         Some(tag) => Ok(tag.clone()),
         None => match tagged_file.first_tag() {
             Some(tag) => Ok(tag.clone()),
-            None => Err(McatError::TagNotFound),
+            None => Err(McatError::TagNotFound(PathBuf::from(file_path))),
         },
     }
 }

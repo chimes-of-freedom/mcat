@@ -151,7 +151,7 @@ impl Repo for TomlDb {
         if self.remove_entry(file_hash)?.is_some() {
             Ok(())
         } else {
-            Err(McatError::TrackNotFound)
+            Err(McatError::TrackNotFound(format!("BLAKE3={file_hash}")))
         }
     }
 

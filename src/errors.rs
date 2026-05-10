@@ -2,6 +2,7 @@
 
 use std::fmt;
 use std::io;
+use std::path::PathBuf;
 
 use crate::config;
 
@@ -9,11 +10,11 @@ use crate::config;
 #[derive(Debug)]
 pub enum McatError {
     /// The target file does not exist.
-    FileNotFound,
+    FileNotFound(PathBuf),
     /// No readable metadata tag was found in a media file.
-    TagNotFound,
+    TagNotFound(PathBuf),
     /// The requested track does not exist in the repository.
-    TrackNotFound,
+    TrackNotFound(String),
     /// The working directory is already initialized.
     RepeatedInit,
 
@@ -35,9 +36,13 @@ pub type McatResult<T> = Result<T, McatError>;
 impl fmt::Display for McatError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            McatError::FileNotFound => write!(f, "file not found"),
-            McatError::TagNotFound => write!(f, "no tag found in media file"),
-            McatError::TrackNotFound => write!(f, "track not found in repo's database"),
+            McatError::FileNotFound(file_path) => write!(f, "file not found: {file_path:?}"),
+            McatError::TagNotFound(file_path) => {
+                write!(f, "no tag found in media file: {file_path:?}")
+            }
+            McatError::TrackNotFound(track_title) => {
+                write!(f, "track not found in repo's database: {track_title}")
+            }
             McatError::RepeatedInit => write!(
                 f,
                 "there's already a file or directory named {}",

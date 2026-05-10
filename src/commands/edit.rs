@@ -30,7 +30,7 @@ pub fn execute(track: String, edit: EditArgs) -> McatResult<()> {
         repo.query_track_by_title(&track)
     };
     let Some(mut entry) = entry else {
-        return Err(McatError::TrackNotFound);
+        return Err(McatError::TrackNotFound("".to_string()));
     };
 
     let tag_attr = &mut entry.tag_attr;
