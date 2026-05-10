@@ -14,8 +14,6 @@ pub enum McatError {
     TagNotFound,
     /// The requested track does not exist in the repository.
     TrackNotFound,
-    /// No tag attributes were provided for an update.
-    AttrEmpty,
     /// The working directory is already initialized.
     RepeatedInit,
 
@@ -40,7 +38,6 @@ impl fmt::Display for McatError {
             McatError::FileNotFound => write!(f, "file not found"),
             McatError::TagNotFound => write!(f, "no tag found in media file"),
             McatError::TrackNotFound => write!(f, "track not found in repo's database"),
-            McatError::AttrEmpty => write!(f, "no tag attributes provided"),
             McatError::RepeatedInit => write!(
                 f,
                 "there's already a file or directory named {}",
