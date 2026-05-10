@@ -57,7 +57,6 @@ impl fmt::Display for McatError {
     }
 }
 
-// TODO: print error chain using `source()`
 impl std::error::Error for McatError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
@@ -68,6 +67,15 @@ impl std::error::Error for McatError {
             McatError::DateParse(e) => Some(e),
             _ => None,
         }
+    }
+}
+
+pub fn print_error_chain(e: &dyn std::error::Error) {
+    eprintln!("Error: {e}");
+    let mut source = e.source();
+    while let Some(cause) = source {
+        eprintln!("  Caused by: {cause}");
+        source = cause.source();
     }
 }
 

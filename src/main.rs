@@ -1,16 +1,16 @@
 //! Binary entry point for the mcat command-line application.
 
-use mcat::{commands, config};
+use mcat::{commands, config, errors::print_error_chain};
 
 fn main() {
     if let Err(e) = config::init(None) {
-        eprintln!("Error: {e}");
+        print_error_chain(&e);
 
         std::process::exit(1);
     }
 
     if let Err(e) = commands::run() {
-        eprintln!("Error: {e}");
+        print_error_chain(&e);
 
         std::process::exit(1);
     }
