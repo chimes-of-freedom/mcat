@@ -20,7 +20,7 @@ pub fn execute(
     track: bool,
     exist: bool,
     repair: bool,
-    save_to: Option<impl AsRef<Path>>,
+    save_path: Option<impl AsRef<Path>>,
 ) -> McatResult<()> {
     let mut repo = TomlDb::try_from(config::repo_file_path())?;
     let track_hashes = repo.get_track_hashes();
@@ -77,7 +77,7 @@ pub fn execute(
     }
 
     // save the result to `save_path` or print a message on terminal
-    if let Some(save_path) = save_to {
+    if let Some(save_path) = save_path {
         let check_res = CheckResult {
             not_tracked,
             not_exists,

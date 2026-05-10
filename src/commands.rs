@@ -29,8 +29,8 @@ pub fn run() -> McatResult<()> {
             track,
             exist,
             repair,
-            save_to,
-        } => check::execute(track, exist, repair, save_to),
+            save_path,
+        } => check::execute(track, exist, repair, save_path),
 
         Commands::Remove {
             filter,

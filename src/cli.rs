@@ -28,6 +28,7 @@ pub enum Commands {
     /// Edits metadata of a track.
     Edit {
         /// Hash or title of rack to edit.
+        #[arg(value_name = "track")]
         track: String,
 
         #[command(flatten)]
@@ -52,8 +53,8 @@ pub enum Commands {
         repair: bool,
 
         /// Saves check results as TOML.
-        #[arg(short, long)]
-        save_to: Option<PathBuf>,
+        #[arg(short, long, value_name = "save-path")]
+        save_path: Option<PathBuf>,
     },
 
     /// Removes tracks from the repository, optionally removing files.
@@ -69,6 +70,7 @@ pub enum Commands {
     /// Imports music files from a directory.
     Import {
         /// Path to directory.
+        #[arg(value_name = "path")]
         path: PathBuf,
 
         /// Move files instead of copying them.
@@ -98,48 +100,48 @@ pub enum Commands {
     ),
 )]
 pub struct FilterArgs {
-    /// Track title filter (repeatable).
-    #[arg(long = "title")]
+    /// Track title filter.
+    #[arg(long = "title", value_name = "title")]
     pub titles: Vec<String>,
 
-    /// Track artist filter (repeatable).
-    #[arg(long = "artist")]
+    /// Track artist filter.
+    #[arg(long = "artist", value_name = "artist")]
     pub artists: Vec<String>,
 
-    /// Album title filter (repeatable).
-    #[arg(long = "album")]
+    /// Album title filter.
+    #[arg(long = "album", value_name = "album")]
     pub albums: Vec<String>,
 
-    /// Album artist filter (repeatable).
-    #[arg(long = "album-artist")]
+    /// Album artist filter.
+    #[arg(long = "album-artist", value_name = "album-artist")]
     pub album_artists: Vec<String>,
 
-    /// Recording / Release date filter (repeatable).
-    #[arg(long = "date")]
+    /// Recording / Release date filter.
+    #[arg(long = "date", value_name = "date")]
     pub dates: Vec<String>,
 
-    /// Track number filter (repeatable).
-    #[arg(long = "track-number")]
+    /// Track number filter.
+    #[arg(long = "track-number", value_name = "track-number")]
     pub track_numbers: Vec<usize>,
 
-    /// Disc number filter (repeatable).
-    #[arg(long = "disc-number")]
+    /// Disc number filter.
+    #[arg(long = "disc-number", value_name = "disc-number")]
     pub disc_numbers: Vec<usize>,
 
-    /// Genre filter (repeatable).
-    #[arg(long = "genre")]
+    /// Genre filter.
+    #[arg(long = "genre", value_name = "genre")]
     pub genres: Vec<String>,
 
-    /// Composer filter (repeatable).
-    #[arg(long = "composer")]
+    /// Composer filter.
+    #[arg(long = "composer", value_name = "composer")]
     pub composers: Vec<String>,
 
-    /// Lyricist filter (repeatable).
-    #[arg(long = "lyricist")]
+    /// Lyricist filter.
+    #[arg(long = "lyricist", value_name = "lyricist")]
     pub lyricists: Vec<String>,
 
-    /// File hash filter (repeatable).
-    #[arg(long = "hash")]
+    /// File hash filter.
+    #[arg(long = "hash", value_name = "hash")]
     pub hashes: Vec<String>,
 }
 
@@ -165,51 +167,51 @@ pub struct FilterArgs {
 )]
 pub struct EditArgs {
     /// New title.
-    #[arg(long)]
+    #[arg(long, value_name = "title")]
     pub title: Option<String>,
 
     /// New artist.
-    #[arg(long)]
+    #[arg(long, value_name = "artist")]
     pub artist: Option<String>,
 
     /// New album.
-    #[arg(long)]
+    #[arg(long, value_name = "album")]
     pub album: Option<String>,
 
     /// New album artist.
-    #[arg(long)]
+    #[arg(long, value_name = "album-artist")]
     pub album_artist: Option<String>,
 
     /// New recording / release date.
-    #[arg(long)]
+    #[arg(long, value_name = "date")]
     pub date: Option<NaiveDate>,
 
     /// New track number.
-    #[arg(long)]
+    #[arg(long, value_name = "track-number")]
     pub track_number: Option<usize>,
 
     /// New disc number.
-    #[arg(long)]
+    #[arg(long, value_name = "disc-number")]
     pub disc_number: Option<usize>,
 
     /// New genre.
-    #[arg(long)]
+    #[arg(long, value_name = "genre")]
     pub genre: Option<String>,
 
     /// New composer.
-    #[arg(long)]
+    #[arg(long, value_name = "composer")]
     pub composer: Option<String>,
 
     /// New lyricist.
-    #[arg(long)]
+    #[arg(long, value_name = "lyricist")]
     pub lyricist: Option<String>,
 
     /// Path to new lyrics text file.
-    #[arg(long)]
+    #[arg(long, value_name = "lyrics")]
     pub lyrics: Option<PathBuf>,
 
     /// Path to new front cover image file.
-    #[arg(long)]
+    #[arg(long, value_name = "front-cover")]
     pub front_cover: Option<PathBuf>,
 }
 
