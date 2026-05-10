@@ -1,6 +1,6 @@
 # mcat
 
-Music Catalog（mcat）是一款音乐文件管理工具，旨在优雅地管理音乐文件及其元数据。
+mcat（Music CATalog）是一款音乐文件管理工具，旨在优雅地管理音乐文件及其元数据。
 
 ## 项目特色
 
@@ -26,7 +26,7 @@ mcat 采用“子命令 + 选项”格式的命令风格。
 
 ```text
 $ mcat --help
-Music Cataloging Tool
+mcat is a music cataloging tool aimed at providing a graceful way to manage music files along with their metadata.
 
 Usage: mcat.exe <COMMAND>
 
@@ -40,8 +40,11 @@ Commands:
   help     Print this message or the help of the given subcommand(s)
 
 Options:
-  -h, --help     Print help
-  -V, --version  Print version
+  -h, --help
+          Print help (see a summary with '-h')
+
+  -V, --version
+          Print version
 ```
 
 ### 初始化仓库

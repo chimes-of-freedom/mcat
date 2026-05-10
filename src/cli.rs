@@ -9,7 +9,11 @@ use crate::{errors::McatError, models::TrackFilter};
 
 /// Top-level CLI parser for mcat.
 #[derive(Parser)]
-#[command(version, about, long_about = None)]
+#[command(
+    version,
+    about,
+    long_about = "mcat is a music cataloging tool aimed at providing a graceful way to manage music files along with their metadata."
+)]
 pub struct Cli {
     /// Selected subcommand action.
     #[command(subcommand)]
