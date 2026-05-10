@@ -65,11 +65,11 @@ Checks consistency between files under `media/` and repository records
 Usage: mcat.exe check [OPTIONS]
 
 Options:
-  -t, --track              Checks only whether files under `media/` are tracked
-  -e, --exist              Checks only whether tracked files still exist under `media/`
-  -r, --repair             Repairs repository state according to check results
-  -s, --save-to <SAVE_TO>  Saves check results as TOML
-  -h, --help               Print help
+  -t, --track                  Checks only whether files under `media/` are tracked
+  -e, --exist                  Checks only whether tracked files still exist under `media/`
+  -r, --repair                 Repairs repository state according to check results
+  -s, --save-path <save-path>  Saves check results as TOML
+  -h, --help                   Print help
 ```
 
 ### 删除曲目
@@ -78,22 +78,22 @@ Options:
 $ mcat remove --help
 Removes tracks from the repository, optionally removing files
 
-Usage: mcat.exe remove [OPTIONS] <--title <TITLES>|--artist <ARTISTS>|--album <ALBUMS>|--album-artist <ALBUM_ARTISTS>|--date <DATES>|--track-number <TRACK_NUMBERS>|--disc-number <DISC_NUMBERS>|--genre <GENRES>|--composer <COMPOSERS>|--lyricist <LYRICISTS>|--hash <HASHES>>
+Usage: mcat.exe remove [OPTIONS] <--title <title>|--artist <artist>|--album <album>|--album-artist <album-artist>|--date <date>|--track-number <track-number>|--disc-number <disc-number>|--genre <genre>|--composer <composer>|--lyricist <lyricist>|--hash <hash>>
 
 Options:
-      --title <TITLES>                Track title filter (repeatable)
-      --artist <ARTISTS>              Track artist filter (repeatable)
-      --album <ALBUMS>                Album title filter (repeatable)
-      --album-artist <ALBUM_ARTISTS>  Album artist filter (repeatable)
-      --date <DATES>                  Recording / Release date filter (repeatable)
-      --track-number <TRACK_NUMBERS>  Track number filter (repeatable)
-      --disc-number <DISC_NUMBERS>    Disc number filter (repeatable)
-      --genre <GENRES>                Genre filter (repeatable)
-      --composer <COMPOSERS>          Composer filter (repeatable)
-      --lyricist <LYRICISTS>          Lyricist filter (repeatable)
-      --hash <HASHES>                 File hash filter (repeatable)
-  -r, --remove-file                   Removes the media file as well
-  -h, --help                          Print help
+      --title <title>                Track title filter
+      --artist <artist>              Track artist filter
+      --album <album>                Album title filter
+      --album-artist <album-artist>  Album artist filter
+      --date <date>                  Recording / Release date filter
+      --track-number <track-number>  Track number filter
+      --disc-number <disc-number>    Disc number filter
+      --genre <genre>                Genre filter
+      --composer <composer>          Composer filter
+      --lyricist <lyricist>          Lyricist filter
+      --hash <hash>                  File hash filter
+  -r, --remove-file                  Removes the media file as well
+  -h, --help                         Print help
 ```
 
 ### 查看文件元数据
@@ -102,21 +102,21 @@ Options:
 $ mcat display --help
 Displays music metadata stored in the repository
 
-Usage: mcat.exe display <--title <TITLES>|--artist <ARTISTS>|--album <ALBUMS>|--album-artist <ALBUM_ARTISTS>|--date <DATES>|--track-number <TRACK_NUMBERS>|--disc-number <DISC_NUMBERS>|--genre <GENRES>|--composer <COMPOSERS>|--lyricist <LYRICISTS>|--hash <HASHES>>
+Usage: mcat.exe display <--title <title>|--artist <artist>|--album <album>|--album-artist <album-artist>|--date <date>|--track-number <track-number>|--disc-number <disc-number>|--genre <genre>|--composer <composer>|--lyricist <lyricist>|--hash <hash>>
 
 Options:
-      --title <TITLES>                Track title filter (repeatable)
-      --artist <ARTISTS>              Track artist filter (repeatable)
-      --album <ALBUMS>                Album title filter (repeatable)
-      --album-artist <ALBUM_ARTISTS>  Album artist filter (repeatable)
-      --date <DATES>                  Recording / Release date filter (repeatable)
-      --track-number <TRACK_NUMBERS>  Track number filter (repeatable)
-      --disc-number <DISC_NUMBERS>    Disc number filter (repeatable)
-      --genre <GENRES>                Genre filter (repeatable)
-      --composer <COMPOSERS>          Composer filter (repeatable)
-      --lyricist <LYRICISTS>          Lyricist filter (repeatable)
-      --hash <HASHES>                 File hash filter (repeatable)
-  -h, --help                          Print help
+      --title <title>                Track title filter
+      --artist <artist>              Track artist filter
+      --album <album>                Album title filter
+      --album-artist <album-artist>  Album artist filter
+      --date <date>                  Recording / Release date filter
+      --track-number <track-number>  Track number filter
+      --disc-number <disc-number>    Disc number filter
+      --genre <genre>                Genre filter
+      --composer <composer>          Composer filter
+      --lyricist <lyricist>          Lyricist filter
+      --hash <hash>                  File hash filter
+  -h, --help                         Print help
 ```
 
 ### 编辑文件元数据
@@ -125,24 +125,24 @@ Options:
 $ mcat edit --help
 Edits metadata of a track
 
-Usage: mcat.exe edit [OPTIONS] <--title <TITLE>|--artist <ARTIST>|--album <ALBUM>|--album-artist <ALBUM_ARTIST>|--date <DATE>|--track-number <TRACK_NUMBER>|--disc-number <DISC_NUMBER>|--genre <GENRE>|--composer <COMPOSER>|--lyricist <LYRICIST>|--front-cover <FRONT_COVER>> <TRACK>
+Usage: mcat.exe edit [OPTIONS] <--title <title>|--artist <artist>|--album <album>|--album-artist <album-artist>|--date <date>|--track-number <track-number>|--disc-number <disc-number>|--genre <genre>|--composer <composer>|--lyricist <lyricist>|--front-cover <front-cover>> <track>
 
 Arguments:
-  <TRACK>  Hash or title of rack to edit
+  <track>  Hash or title of rack to edit
 
 Options:
-      --title <TITLE>                New title
-      --artist <ARTIST>              New artist
-      --album <ALBUM>                New album
-      --album-artist <ALBUM_ARTIST>  New album artist
-      --date <DATE>                  New recording / release date
-      --track-number <TRACK_NUMBER>  New track number
-      --disc-number <DISC_NUMBER>    New disc number
-      --genre <GENRE>                New genre
-      --composer <COMPOSER>          New composer
-      --lyricist <LYRICIST>          New lyricist
-      --lyrics <LYRICS>              Path to new lyrics text file
-      --front-cover <FRONT_COVER>    Path to new front cover image file
+      --title <title>                New title
+      --artist <artist>              New artist
+      --album <album>                New album
+      --album-artist <album-artist>  New album artist
+      --date <date>                  New recording / release date
+      --track-number <track-number>  New track number
+      --disc-number <disc-number>    New disc number
+      --genre <genre>                New genre
+      --composer <composer>          New composer
+      --lyricist <lyricist>          New lyricist
+      --lyrics <lyrics>              Path to new lyrics text file
+      --front-cover <front-cover>    Path to new front cover image file
   -h, --help                         Print help
 ```
 
@@ -152,10 +152,10 @@ Options:
 $ mcat import --help
 Imports music files from a directory
 
-Usage: mcat.exe import [OPTIONS] <PATH>
+Usage: mcat.exe import [OPTIONS] <path>
 
 Arguments:
-  <PATH>  Path to directory
+  <path>  Path to directory
 
 Options:
   -m, --move  Move files instead of copying them
