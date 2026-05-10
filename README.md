@@ -26,7 +26,8 @@ mcat 采用“子命令 + 选项”格式的命令风格。
 
 ```text
 $ mcat --help
-mcat is a music cataloging tool aimed at providing a graceful way to manage music files along with their metadata.
+mcat is a music cataloging tool aimed at providing a graceful way
+to manage music files along with their metadata.
 
 Usage: mcat <COMMAND>
 

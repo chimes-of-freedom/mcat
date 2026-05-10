@@ -12,7 +12,10 @@ use crate::{errors::McatError, models::TrackFilter};
 #[command(
     version,
     about,
-    long_about = "mcat is a music cataloging tool aimed at providing a graceful way to manage music files along with their metadata."
+    long_about = concat!(
+        "mcat is a music cataloging tool aimed at providing a graceful way\n",
+        "to manage music files along with their metadata.",
+    )
 )]
 pub struct Cli {
     /// Selected subcommand action.
