@@ -1,28 +1,38 @@
 # mcat
 
-mcat（Music CATalog）是一款音乐文件管理工具，旨在优雅地管理音乐文件及其元数据。
+mcat (Music CATalog) is a music cataloging tool aimed at providing a graceful way to manage music files along with their metadata.
 
-## 项目特色
+> [!Warning]
+>
+> mcat is under active development and may have lots of bugs and missing features. For developers, see [Development Guide](docs/DEVELOPMENT.md).
 
-- 元数据与文件分离，管理灵活；
-- 采用 TOML 记录元数据，可读性强，且方便日后使用 Git 进行版本控制；
-- 命令行工具，接口完备，方便批处理与日后的图形化前端开发。
+## Quick Start
 
-## 快速开始
-
-### 从源码构建
+Build mcat from source.
 
 ```sh
-git clone https://github.com/chimes-of-freedom/mcat.git
-cd mcat
-cargo build --release   # target at `target/release/mcat`
+git clone https://github.com/chimes-of-freedom/mcat.git && cd mcat
+cargo build -r # target under `target/release`
 ```
 
-## 用法
+Make a directory as your repository, and place your music files under `media/`.
 
-mcat 采用“子命令 + 选项”格式的命令风格。
+```sh
+mkdir my_music_repo && cd my_musci_repo
+cp -r /path/to/your/music/files/directory media
+```
 
-### 子命令
+Initialize the repository. mcat will scan music files under `media/` and create a directory named `.mcat/` to store metadata.
+
+```sh
+mcat init
+```
+
+**That's that!**
+
+## Usage
+
+The CLI of mcat consists of subcommands and options.
 
 ```text
 $ mcat --help
@@ -48,134 +58,70 @@ Options:
           Print version
 ```
 
-### 初始化仓库
+### Init
+
+`mcat init` initializes a repository.
+
+### Display
+
+`mcat display` shows metadata of selected tracks in the repository. If no filter is specified, it will display metadata of all tracks.
+
+The usage of filters is as follows.
 
 ```text
-$ mcat init --help
-Initializes a repository from files under `media/`
-
-Usage: mcat init
-
-Options:
-  -h, --help  Print help
+$ mcat display --artist 陳奕迅
+┌─────────────────────┬────────┬──────────────┬──────────────┬──────┬──────────────┬─────────────┬───────────────────┬──────────┬──────────┐
+│ title               │ artist │ album        │ album_artist │ date │ track_number │ disc_number │ genre             │ composer │ lyricist │
+├─────────────────────┼────────┼──────────────┼──────────────┼──────┼──────────────┼─────────────┼───────────────────┼──────────┼──────────┤
+│ 黃金時代            │ 陳奕迅 │ 我的快樂時代 │              │      │ 4            │ 1           │ 粵語流行音樂      │ 柳重言   │ 林夕     │
+├─────────────────────┼────────┼──────────────┼──────────────┼──────┼──────────────┼─────────────┼───────────────────┼──────────┼──────────┤
+│ 反高潮              │ 陳奕迅 │ 我的快樂時代 │              │      │ 10           │ 1           │ 粵語流行音樂      │ 陳奕迅   │ 黃偉文   │
+├─────────────────────┼────────┼──────────────┼──────────────┼──────┼──────────────┼─────────────┼───────────────────┼──────────┼──────────┤
+│ 垃圾 (Live Version) │ 陳奕迅 │ 幸福         │              │      │ 4            │ 2           │ 廣東歌/香港流行樂 │ 陳輝陽   │ 黃偉文   │
+└─────────────────────┴────────┴──────────────┴──────────────┴──────┴──────────────┴─────────────┴───────────────────┴──────────┴──────────┘
+$ mcat display --artist 陳奕迅 --artist=張國榮
+┌─────────────────────┬────────┬──────────────┬──────────────┬──────┬──────────────┬─────────────┬───────────────────┬──────────┬──────────┐
+│ title               │ artist │ album        │ album_artist │ date │ track_number │ disc_number │ genre             │ composer │ lyricist │
+├─────────────────────┼────────┼──────────────┼──────────────┼──────┼──────────────┼─────────────┼───────────────────┼──────────┼──────────┤
+│ 黃金時代            │ 陳奕迅 │ 我的快樂時代 │              │      │ 4            │ 1           │ 粵語流行音樂      │ 柳重言   │ 林夕     │
+├─────────────────────┼────────┼──────────────┼──────────────┼──────┼──────────────┼─────────────┼───────────────────┼──────────┼──────────┤
+│ 玻璃之情            │ 張國榮 │ 一切隨風     │              │      │ 2            │ 1           │ Pop               │ 張國榮   │ 林夕     │
+├─────────────────────┼────────┼──────────────┼──────────────┼──────┼──────────────┼─────────────┼───────────────────┼──────────┼──────────┤
+│ 反高潮              │ 陳奕迅 │ 我的快樂時代 │              │      │ 10           │ 1           │ 粵語流行音樂      │ 陳奕迅   │ 黃偉文   │
+├─────────────────────┼────────┼──────────────┼──────────────┼──────┼──────────────┼─────────────┼───────────────────┼──────────┼──────────┤
+│ 垃圾 (Live Version) │ 陳奕迅 │ 幸福         │              │      │ 4            │ 2           │ 廣東歌/香港流行樂 │ 陳輝陽   │ 黃偉文   │
+├─────────────────────┼────────┼──────────────┼──────────────┼──────┼──────────────┼─────────────┼───────────────────┼──────────┼──────────┤
+│ 春夏秋冬            │ 張國榮 │ 陪你倒數     │              │      │ 3            │ 1           │ 粵語流行音樂      │ 葉良俊   │ 林振強   │
+└─────────────────────┴────────┴──────────────┴──────────────┴──────┴──────────────┴─────────────┴───────────────────┴──────────┴──────────┘
+$ mcat display --artist 陳奕迅 --artist 張國榮 --album 我的快樂時代
+┌──────────┬────────┬──────────────┬──────────────┬──────┬──────────────┬─────────────┬──────────────┬──────────┬──────────┐
+│ title    │ artist │ album        │ album_artist │ date │ track_number │ disc_number │ genre        │ composer │ lyricist │
+├──────────┼────────┼──────────────┼──────────────┼──────┼──────────────┼─────────────┼──────────────┼──────────┼──────────┤
+│ 黃金時代 │ 陳奕迅 │ 我的快樂時代 │              │      │ 4            │ 1           │ 粵語流行音樂 │ 柳重言   │ 林夕     │
+├──────────┼────────┼──────────────┼──────────────┼──────┼──────────────┼─────────────┼──────────────┼──────────┼──────────┤
+│ 反高潮   │ 陳奕迅 │ 我的快樂時代 │              │      │ 10           │ 1           │ 粵語流行音樂 │ 陳奕迅   │ 黃偉文   │
+└──────────┴────────┴──────────────┴──────────────┴──────┴──────────────┴─────────────┴──────────────┴──────────┴──────────┘
 ```
 
-### 检查仓库数据库同步情况
+### Remove
 
-```text
-$ mcat check --help
-Checks consistency between files under `media/` and repository records
+`mcat remove` removes metadata of selected tracks from the repository, alternatively along with music files. If no filter is specified, it won't remove anything.
 
-Usage: mcat check [OPTIONS]
+### Edit
 
-Options:
-  -t, --track                  Checks only whether files under `media/` are tracked
-  -e, --exist                  Checks only whether tracked files still exist under `media/`
-  -r, --repair                 Repairs repository state according to check results
-  -s, --save-path <save-path>  Saves check results as TOML
-  -h, --help                   Print help
-```
+`mcat edit` updates metadata of the track specified by title or BLAKE3 hash. If no field of metadata is provided, it won't update anything.
 
-### 删除曲目
+### Import
 
-```text
-$ mcat remove --help
-Removes tracks from the repository, optionally removing files. Does nothing if no filter specified
+`mcat import` imports music files into the repository. Metadata will be recorded, and if `-m / --move` is specified, files will be moved into `media/` instead of copying them.
 
-Usage: mcat remove [OPTIONS]
+### Check
 
-Options:
-      --title <title>                Track title filter
-      --artist <artist>              Track artist filter
-      --album <album>                Album title filter
-      --album-artist <album-artist>  Album artist filter
-      --date <date>                  Recording / Release date filter
-      --track-number <track-number>  Track number filter
-      --disc-number <disc-number>    Disc number filter
-      --genre <genre>                Genre filter
-      --composer <composer>          Composer filter
-      --lyricist <lyricist>          Lyricist filter
-      --hash <hash>                  File hash filter
-  -r, --remove-file                  Removes the media file as well
-  -h, --help                         Print help
-```
+`mcat check` checks the consistency between files under `media/` and repository records using BLACK3 hash.
 
-### 查看文件元数据
+- If `-t / --track` is specified, mcat checks only whether files under `media/` are tracked;
+- If `-e / --exist` is specified, mcat checks only whether tracked files still exist under `media/`.
 
-```text
-$ mcat display --help
-Displays music metadata stored in the repository. Display all tracks if no filter specified
+By default, mcat checks both of them.
 
-Usage: mcat display [OPTIONS]
-
-Options:
-      --title <title>                Track title filter
-      --artist <artist>              Track artist filter
-      --album <album>                Album title filter
-      --album-artist <album-artist>  Album artist filter
-      --date <date>                  Recording / Release date filter
-      --track-number <track-number>  Track number filter
-      --disc-number <disc-number>    Disc number filter
-      --genre <genre>                Genre filter
-      --composer <composer>          Composer filter
-      --lyricist <lyricist>          Lyricist filter
-      --hash <hash>                  File hash filter
-  -h, --help                         Print help
-```
-
-### 编辑文件元数据
-
-```text
-$ mcat edit --help
-Edits metadata of a track. Does nothing if no filter specified
-
-Usage: mcat edit [OPTIONS] <track>
-
-Arguments:
-  <track>  Hash or title of rack to edit
-
-Options:
-      --title <title>                New title
-      --artist <artist>              New artist
-      --album <album>                New album
-      --album-artist <album-artist>  New album artist
-      --date <date>                  New recording / release date
-      --track-number <track-number>  New track number
-      --disc-number <disc-number>    New disc number
-      --genre <genre>                New genre
-      --composer <composer>          New composer
-      --lyricist <lyricist>          New lyricist
-      --lyrics <lyrics>              Path to new lyrics text file
-      --front-cover <front-cover>    Path to new front cover image file
-  -h, --help                         Print help
-```
-
-### 导入音乐文件到仓库
-
-```text
-$ mcat import --help
-Imports music files from a directory
-
-Usage: mcat import [OPTIONS] <path>
-
-Arguments:
-  <path>  Path to directory
-
-Options:
-  -m, --move  Move files instead of copying them
-  -h, --help  Print help
-```
-
-## 开发文档
-
-见 [STRUCTURE.md](docs/STRUCTURE.md)。
-
-## Todo List
-
-- [x] init（重构）-> 初始化数据库，提取所有元数据，计算哈希时去除文件标签（但不写回文件）以保证哈希稳定。
-- [x] check -> 检查数据库和 `media/` 下文件数据是否匹配。
-- [x] import -> 导入指定目录下歌曲到仓库。默认是拷贝文件到仓库、插入文件元数据信息到数据库，可指定为“移动文件”。
-- [x] edit（重构）-> 更改指定曲目元数据信息。
-- [x] display（重构）-> 指定 title 查询曲目信息。可选参数 filter 实现查询过滤。
-- [x] remove -> 从仓库删除指定曲目。可选参数 filter 实现批量删除。
-- [ ] export -> 导出曲目到指定文件夹。主要步骤是将元数据写回文件，然后导出。可选参数 filter 实现批量导出，with-list 实现歌单导出。
+You can also specify `-r / --repair` to repairs repository state according to check results and `-s / --save-path <path>` to save check results as TOML.
