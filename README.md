@@ -166,6 +166,10 @@ Options:
   -h, --help  Print help
 ```
 
+## 开发文档
+
+见 [STRUCTURE.md](docs/STRUCTURE.md)。
+
 ## Todo List
 
 - [x] init（重构）-> 初始化数据库，提取所有元数据，计算哈希时去除文件标签（但不写回文件）以保证哈希稳定。
