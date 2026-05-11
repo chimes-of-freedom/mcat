@@ -55,7 +55,7 @@ impl fmt::Display for McatError {
             McatError::RepeatedInit => write!(
                 f,
                 "there's already a file or directory named {}",
-                config::media_dir_path().display()
+                config::mcat_dir_path().display()
             ),
             McatError::Io(e) => write!(f, "I/O error: {}", e),
             McatError::Tag(e) => write!(f, "tag operation error: {}", e),
