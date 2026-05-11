@@ -16,6 +16,11 @@ use crate::{
 ///
 /// Returns repository loading, lookup, removal, or persistence errors.
 pub fn execute(filter: TrackFilter, remove_file: bool) -> McatResult<()> {
+    if filter.is_empty() {
+        println!("Filter is empty, no tracks will be removed.");
+        return Ok(());
+    }
+
     let mut repo = TomlDb::try_from(config::repo_file_path())?;
 
     let matched_hashes = filter.apply(&repo);

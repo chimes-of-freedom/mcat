@@ -248,6 +248,21 @@ impl TrackFilter {
         }
     }
 
+    /// Returns whether all filter fields are empty.
+    pub fn is_empty(&self) -> bool {
+        self.titles.is_empty()
+            && self.artists.is_empty()
+            && self.albums.is_empty()
+            && self.album_artists.is_empty()
+            && self.dates.is_empty()
+            && self.track_numbers.is_empty()
+            && self.disc_numbers.is_empty()
+            && self.genres.is_empty()
+            && self.composers.is_empty()
+            && self.lyricists.is_empty()
+            && self.hashes.is_empty()
+    }
+
     /// Applies the filter to the repository, returning hashes of matching
     /// tracks.
     pub fn apply<T: Repo>(self, repo: &T) -> Vec<String> {

@@ -1,7 +1,7 @@
 //! CLI argument definitions and command-line parsing structures.
 
 use chrono::NaiveDate;
-use clap::{ArgGroup, Parser, Subcommand};
+use clap::{Parser, Subcommand};
 
 use std::{path::PathBuf, str::FromStr};
 
@@ -27,14 +27,14 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     /// Displays music metadata stored in the repository.
-    #[command(override_usage = "mcat displiay <OPTIONS>")]
+    /// Display all tracks if no filter specified.
     Display {
         #[command(flatten)]
         filter: FilterArgs,
     },
 
     /// Edits metadata of a track.
-    #[command(override_usage = "mcat edit <OPTIONS> <track>")]
+    /// Does nothing if no filter specified.
     Edit {
         /// Hash or title of rack to edit.
         #[arg(value_name = "track")]
@@ -67,7 +67,7 @@ pub enum Commands {
     },
 
     /// Removes tracks from the repository, optionally removing files.
-    #[command(override_usage = "mcat remove <OPTIONS>")]
+    /// Does nothing if no filter specified.
     Remove {
         #[command(flatten)]
         filter: FilterArgs,
@@ -90,25 +90,6 @@ pub enum Commands {
 }
 
 #[derive(clap::Args, Debug, Clone)]
-#[command(
-    group(
-        ArgGroup::new("filter_group")
-            .required(true)
-            .args([
-                "titles",
-                "artists",
-                "albums",
-                "album_artists",
-                "dates",
-                "track_numbers",
-                "disc_numbers",
-                "genres",
-                "composers",
-                "lyricists",
-                "hashes",
-            ]),
-    ),
-)]
 pub struct FilterArgs {
     /// Track title filter.
     #[arg(long = "title", value_name = "title")]
@@ -156,25 +137,6 @@ pub struct FilterArgs {
 }
 
 #[derive(clap::Args, Debug, Clone)]
-#[command(
-    group(
-        ArgGroup::new("edit_group")
-            .required(true)
-            .args([
-                "title",
-                "artist",
-                "album",
-                "album_artist",
-                "date",
-                "track_number",
-                "disc_number",
-                "genre",
-                "composer",
-                "lyricist",
-                "front_cover",
-            ]),
-    ),
-)]
 pub struct EditArgs {
     /// New title.
     #[arg(long, value_name = "title")]
@@ -225,6 +187,23 @@ pub struct EditArgs {
     pub front_cover: Option<PathBuf>,
 }
 
+impl FilterArgs {
+    /// Returns whether args are empty.
+    pub fn is_empty(&self) -> bool {
+        self.titles.is_empty()
+            && self.artists.is_empty()
+            && self.albums.is_empty()
+            && self.album_artists.is_empty()
+            && self.dates.is_empty()
+            && self.track_numbers.is_empty()
+            && self.disc_numbers.is_empty()
+            && self.genres.is_empty()
+            && self.composers.is_empty()
+            && self.lyricists.is_empty()
+            && self.hashes.is_empty()
+    }
+}
+
 impl TryFrom<FilterArgs> for TrackFilter {
     type Error = McatError;
 
@@ -248,5 +227,23 @@ impl TryFrom<FilterArgs> for TrackFilter {
             f.lyricists,
             f.hashes,
         ))
+    }
+}
+
+impl EditArgs {
+    /// Returns whether args are empty.
+    pub fn is_empty(&self) -> bool {
+        self.title.is_none()
+            && self.artist.is_none()
+            && self.album.is_none()
+            && self.album_artist.is_none()
+            && self.date.is_none()
+            && self.track_number.is_none()
+            && self.disc_number.is_none()
+            && self.genre.is_none()
+            && self.composer.is_none()
+            && self.lyricist.is_none()
+            && self.lyrics.is_none()
+            && self.front_cover.is_none()
     }
 }

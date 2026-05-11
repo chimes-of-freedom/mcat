@@ -22,6 +22,11 @@ use crate::{
 /// - Front-cover file checks or file operations fail.
 /// - Inferring the front-cover MIME type fails.
 pub fn execute(track: String, edit: EditArgs) -> McatResult<()> {
+    if edit.is_empty() {
+        println!("New metadata not provided, the track will not be edited.");
+        return Ok(());
+    }
+
     let mut repo = TomlDb::try_from(config::repo_file_path())?;
 
     let entry = if is_valid_blake3_hex(&track) {

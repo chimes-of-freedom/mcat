@@ -32,11 +32,11 @@ to manage music files along with their metadata.
 Usage: mcat <COMMAND>
 
 Commands:
-  display  Displays music metadata stored in the repository
-  edit     Edits metadata of a track
+  display  Displays music metadata stored in the repository. Display all tracks if no filter specified
+  edit     Edits metadata of a track. Does nothing if no filter specified
   init     Initializes a repository from files under `media/`
   check    Checks consistency between files under `media/` and repository records
-  remove   Removes tracks from the repository, optionally removing files
+  remove   Removes tracks from the repository, optionally removing files. Does nothing if no filter specified
   import   Imports music files from a directory
   help     Print this message or the help of the given subcommand(s)
 
@@ -80,9 +80,9 @@ Options:
 
 ```text
 $ mcat remove --help
-Removes tracks from the repository, optionally removing files
+Removes tracks from the repository, optionally removing files. Does nothing if no filter specified
 
-Usage: mcat remove <OPTIONS>
+Usage: mcat remove [OPTIONS]
 
 Options:
       --title <title>                Track title filter
@@ -104,9 +104,9 @@ Options:
 
 ```text
 $ mcat display --help
-Displays music metadata stored in the repository
+Displays music metadata stored in the repository. Display all tracks if no filter specified
 
-Usage: mcat display <OPTIONS>
+Usage: mcat display [OPTIONS]
 
 Options:
       --title <title>                Track title filter
@@ -127,9 +127,9 @@ Options:
 
 ```text
 $ mcat edit --help
-Edits metadata of a track
+Edits metadata of a track. Does nothing if no filter specified
 
-Usage: mcat edit <OPTIONS> <track>
+Usage: mcat edit [OPTIONS] <track>
 
 Arguments:
   <track>  Hash or title of rack to edit

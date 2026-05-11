@@ -15,7 +15,11 @@ use crate::{
 /// Returns repository loading errors.
 pub fn execute(filter: TrackFilter) -> McatResult<()> {
     let repo = TomlDb::try_from(config::repo_file_path())?;
-    let track_hashes = filter.apply(&repo);
+    let track_hashes = if filter.is_empty() {
+        repo.get_track_hashes().into_iter().collect()
+    } else {
+        filter.apply(&repo)
+    };
 
     let mut tag_attrs = Vec::new();
 
