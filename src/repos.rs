@@ -1,62 +1,79 @@
-//! Repository abstractions and concrete repository module declarations.
+//! Repositories for different kinds of entities, such as tracks and playlists.
+//! Types reflected to repositories are re-exported.
 
-use std::collections::BTreeSet;
+mod track_repo;
 
-use serde::{Deserialize, Serialize};
+use std::path::{Path, PathBuf};
 
-use crate::errors::McatResult;
-use crate::models::TagAttributes;
+use lofty::{picture::PictureType, prelude::*, tag::Tag};
+use rusqlite::Row;
+pub use track_repo::TrackRepo;
 
-pub mod toml_repo;
+use crate::models::{
+    NewImage, NewLyrics, NewTrack, NewTrackFile, NewTrackMetadata, TrackMetadataCore, TrackRow,
+};
 
-/// Repository abstraction. Currently implemented by [`toml_repo::TomlDb`].
-pub trait Repo {
-    /// Initializes an empty repository.
-    fn init_empty() -> Self
-    where
-        Self: Sized;
-
-    /// Inserts a track into the repository, flushing any inline cover image
-    /// data to disk first.
-    ///
-    /// # Errors
-    ///
-    /// Returns I/O errors when writing the cover image fails.
-    fn insert_track(&mut self, file_hash: String, tag_attr: TagAttributes) -> McatResult<()>;
-
-    /// Removes a track from the repository.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`crate::errors::McatError::TrackNotFound`] if the track
-    /// does not exist.
-    fn remove_track(&mut self, file_hash: &str) -> McatResult<()>;
-
-    /// Queries a track by its hash.
-    fn query_track_by_hash(&self, file_hash: &str) -> Option<Entry>;
-
-    /// Queries a track by its title.
-    fn query_track_by_title(&self, title: &str) -> Option<Entry>;
-
-    /// Returns all track hashes in the repository.
-    fn get_track_hashes(&self) -> BTreeSet<String>;
-
-    /// Returns tag attributes for all tracks.
-    fn get_tag_attrs(&self) -> Vec<&TagAttributes>;
-
-    /// Persists the repository to its backing file.
-    ///
-    /// # Errors
-    ///
-    /// Returns I/O or serialization related errors while writing
-    /// repository data to disk.
-    fn persist(&mut self) -> McatResult<()>;
+impl TrackRow {
+    pub fn from_row(row: &Row) -> rusqlite::Result<Self> {
+        Ok(Self {
+            id: row.get("id")?,
+            core: TrackMetadataCore {
+                title: row.get("title")?,
+                artist: row.get("artist")?,
+                album: row.get("album")?,
+                album_artist: row.get("album_artist")?,
+                recording_date: row.get("recording_date")?,
+                release_date: row.get("release_date")?,
+                track_number: row.get("track_number")?,
+                disc_number: row.get("disc_number")?,
+                genre: row.get("genre")?,
+                composer: row.get("composer")?,
+                lyricist: row.get("lyricist")?,
+            },
+            lyrics_id: row.get("lyrics_id")?,
+            front_cover_id: row.get("front_cover_id")?,
+            file_id: row.get("file_id")?,
+        })
+    }
 }
 
-/// An [`Entry`] records a file's BLAKE3 hash and its metadata.
-#[derive(Serialize, Deserialize, Clone)]
-pub struct Entry {
-    pub file_hash: String,
+impl From<&Tag> for NewTrackMetadata {
+    fn from(tag: &Tag) -> Self {
+        Self {
+            core: TrackMetadataCore {
+                title: tag.title().unwrap_or_default().to_string(),
+                artist: tag.artist().map(String::from),
+                album: tag.album().map(String::from),
+                album_artist: tag.get_string(ItemKey::AlbumArtist).map(String::from),
+                recording_date: tag.get_string(ItemKey::RecordingDate).map(String::from),
+                release_date: tag.get_string(ItemKey::ReleaseDate).map(String::from),
+                track_number: tag
+                    .get_string(ItemKey::TrackNumber)
+                    .and_then(|s| s.parse().ok()),
+                disc_number: tag
+                    .get_string(ItemKey::DiscNumber)
+                    .and_then(|s| s.parse().ok()),
+                genre: tag.genre().map(String::from),
+                composer: tag.get_string(ItemKey::Composer).map(String::from),
+                lyricist: tag.get_string(ItemKey::Lyricist).map(String::from),
+            },
+            lyrics: tag
+                .get_binary(ItemKey::Lyrics, true)
+                .map(|b| NewLyrics { data: b.to_vec() }),
+            front_cover: tag
+                .get_picture_type(PictureType::CoverFront)
+                .map(|p| NewImage {
+                    data: p.data().to_vec(),
+                }),
+        }
+    }
+}
 
-    pub tag_attr: TagAttributes,
+impl NewTrack {
+    pub fn from_tag(tag: &Tag, path: impl AsRef<Path>) -> Self {
+        Self {
+            metadata: NewTrackMetadata::from(tag),
+            file: NewTrackFile::from(PathBuf::from(path.as_ref())),
+        }
+    }
 }

@@ -1,249 +1,208 @@
-//! CLI argument definitions and command-line parsing structures.
+//! Definitions of the CLI interface.
 
-use chrono::NaiveDate;
-use clap::{Parser, Subcommand};
+use std::path::PathBuf;
 
-use std::{path::PathBuf, str::FromStr};
+use clap::{Args, Parser, Subcommand};
 
-use crate::{errors::McatError, models::TrackFilter};
+use crate::models::TrackFilter;
 
-/// Top-level CLI parser for mcat.
 #[derive(Parser)]
 #[command(
     version,
     about,
-    long_about = concat!(
-        "mcat is a music cataloging tool aimed at providing a graceful way\n",
-        "to manage music files along with their metadata.",
-    )
+    long_about = "\
+        mcat is a music cataloging tool aimed at providing a \
+        graceful way to manage music files along with their metadata.",
+    disable_help_subcommand = true
 )]
 pub struct Cli {
-    /// Selected subcommand action.
+    // Subcommand.
     #[command(subcommand)]
-    pub command: Commands,
+    pub cmd: Commands,
 }
 
-/// Supported mcat subcommands.
 #[derive(Subcommand)]
 pub enum Commands {
-    /// Displays music metadata stored in the repository.
-    /// Display all tracks if no filter specified.
-    Display {
-        #[command(flatten)]
-        filter: FilterArgs,
-    },
-
-    /// Edits metadata of a track.
-    /// Does nothing if no filter specified.
-    Edit {
-        /// Hash or title of rack to edit.
-        #[arg(value_name = "track")]
-        track: String,
-
-        #[command(flatten)]
-        edit: EditArgs,
-    },
-
-    /// Initializes a repository from files under `media/`.
-    Init,
-
-    /// Checks consistency between files under `media/` and repository records.
-    Check {
-        /// Checks only whether files under `media/` are tracked.
-        #[arg(group = "check_filter_group", short, long, default_value = "false")]
-        track: bool,
-
-        /// Checks only whether tracked files still exist under `media/`.
-        #[arg(group = "check_filter_group", short, long, default_value = "false")]
-        exist: bool,
-
-        /// Repairs repository state according to check results.
+    /// Initialize a repository.
+    Init {
+        /// Overwrite .mcat/ if it already exists.
         #[arg(short, long, default_value = "false")]
-        repair: bool,
-
-        /// Saves check results as TOML.
-        #[arg(short, long, value_name = "save-path")]
-        save_path: Option<PathBuf>,
+        force: bool,
     },
 
-    /// Removes tracks from the repository, optionally removing files.
-    /// Does nothing if no filter specified.
+    /// List selected tracks in the repository.
+    ///
+    /// By default all tracks will be listed.
+    ///
+    /// e.g. `mcat list --artist "Bob Dylan" --track_number 1 --track_number 2`
+    /// implies a track of Bob Dylan will be listed if it's the first or the
+    /// second track in an album.
+    #[command(alias = "ls")]
+    List {
+        /// Print the list in JSON format.
+        #[arg(short, long)]
+        json: bool,
+
+        #[command(flatten)]
+        filter_args: Box<FilterArgs>,
+
+        /// Add a column to the result.
+        #[arg(long = "column", value_name = "column")]
+        columns: Vec<String>,
+    },
+
+    /// Add tracks into the repository.
+    ///
+    /// Multiple tracks can be specified at a time.
+    Add {
+        /// Paths to track files to add. Accept directories if `-r` / `--recursive`
+        /// is specified.
+        paths: Vec<PathBuf>,
+
+        /// Recursively add tracks under a directory.
+        #[arg(short, long)]
+        recursive: bool,
+    },
+
+    /// Remove selected tracks from the repository.
+    ///
+    /// By default no tracks will be removed.
+    ///
+    /// `mcat remove` does not removes BLOB files like lyrics, front covers and
+    /// track files from the repository.
+    #[command(alias = "rm")]
     Remove {
         #[command(flatten)]
-        filter: FilterArgs,
+        filter_args: Box<FilterArgs>,
 
-        /// Removes the media file as well.
-        #[arg(short, long, default_value = "false")]
-        remove_file: bool,
+        /// Show the information of tracks removed in JSON format.
+        #[arg(short, long)]
+        detailed: bool,
     },
 
-    /// Imports music files from a directory.
-    Import {
-        /// Path to directory.
-        #[arg(value_name = "path")]
-        path: PathBuf,
+    /// Update fields of selected tracks in the repository.
+    ///
+    /// By default no tracks will be updated.
+    Update {
+        /// Show the information of tracks updated in JSON format.
+        #[arg(short, long)]
+        detailed: bool,
 
-        /// Move files instead of copying them.
-        #[arg(short, long = "move")]
-        move_files: bool,
+        #[command(flatten)]
+        filter_args: Box<FilterArgs>,
+
+        /// Set the value of a field for tracks.
+        ///
+        /// If a BLOB field is to be updated, the value is the path to the new
+        /// BLOB file.
+        ///
+        /// e.g. `mcat update --artist "bob dylan" --set artist="Bob Dylan"`
+        /// corrects the artist name of Bob Dylan's songs, and
+        /// `mcat update --title "Tempest" --set track_file="/path/to/Tempest - Bob Dylan.flac"`
+        /// updates the track file of Bob Dylan's *Tempest*.
+        ///
+        /// Valid fields are: title, artist, album, album_artist,
+        /// recording_date, release_date, track_number, disc_number, genre,
+        /// composer, lyricist, front_cover, track_file.
+        #[arg(long = "set", value_name = "key=value")]
+        kvs_to_set: Vec<String>,
+
+        /// Clear the value of a field for tracks.
+        #[arg(long = "clear", value_name = "key")]
+        columns_to_clear: Vec<String>,
     },
 }
 
-#[derive(clap::Args, Debug, Clone)]
+#[derive(Args)]
 pub struct FilterArgs {
-    /// Track title filter.
+    /// ID of the track.
+    ///
+    /// Multiple values implies "OR" logic.
+    #[arg(long = "id", value_name = "id")]
+    ids: Vec<i64>,
+
+    /// Title of the track.
+    ///
+    /// Multiple values implies "OR" logic.
     #[arg(long = "title", value_name = "title")]
-    pub titles: Vec<String>,
+    titles: Vec<String>,
 
-    /// Track artist filter.
+    /// Artist of the track.
+    ///
+    /// Multiple values implies "OR" logic.
     #[arg(long = "artist", value_name = "artist")]
-    pub artists: Vec<String>,
+    artists: Vec<String>,
 
-    /// Album title filter.
+    /// Album of the track.
+    ///
+    /// Multiple values implies "OR" logic.
     #[arg(long = "album", value_name = "album")]
-    pub albums: Vec<String>,
+    albums: Vec<String>,
 
-    /// Album artist filter.
-    #[arg(long = "album-artist", value_name = "album-artist")]
-    pub album_artists: Vec<String>,
+    /// Album artist of the track.
+    ///
+    /// Multiple values implies "OR" logic.
+    #[arg(long = "album_artist", value_name = "album_artist")]
+    album_artists: Vec<String>,
 
-    /// Recording / Release date filter.
-    #[arg(long = "date", value_name = "date")]
-    pub dates: Vec<String>,
+    /// Recording date of the track.
+    ///
+    /// Multiple values implies "OR" logic.
+    #[arg(long = "recording_date", value_name = "recording_date")]
+    recording_dates: Vec<String>,
 
-    /// Track number filter.
-    #[arg(long = "track-number", value_name = "track-number")]
-    pub track_numbers: Vec<usize>,
+    /// Release date of the track.
+    ///
+    /// Multiple values implies "OR" logic.
+    #[arg(long = "release_date", value_name = "release_date")]
+    release_dates: Vec<String>,
 
-    /// Disc number filter.
-    #[arg(long = "disc-number", value_name = "disc-number")]
-    pub disc_numbers: Vec<usize>,
+    /// Track number of the track.
+    ///
+    /// Multiple values implies "OR" logic.
+    #[arg(long = "track_number", value_name = "track_number")]
+    track_numbers: Vec<i64>,
 
-    /// Genre filter.
+    /// Disc number of the track.
+    ///
+    /// Multiple values implies "OR" logic.
+    #[arg(long = "disc_number", value_name = "disc_number")]
+    disc_numbers: Vec<i64>,
+
+    /// Genre of the track.
+    ///
+    /// Multiple values implies "OR" logic.
     #[arg(long = "genre", value_name = "genre")]
-    pub genres: Vec<String>,
+    genres: Vec<String>,
 
-    /// Composer filter.
+    /// Composer of the track.
+    ///
+    /// Multiple values implies "OR" logic.
     #[arg(long = "composer", value_name = "composer")]
-    pub composers: Vec<String>,
+    composers: Vec<String>,
 
-    /// Lyricist filter.
+    /// Lyricist of the track.
+    ///
+    /// Multiple values implies "OR" logic.
     #[arg(long = "lyricist", value_name = "lyricist")]
-    pub lyricists: Vec<String>,
-
-    /// File hash filter.
-    #[arg(long = "hash", value_name = "hash")]
-    pub hashes: Vec<String>,
+    lyricists: Vec<String>,
 }
 
-#[derive(clap::Args, Debug, Clone)]
-pub struct EditArgs {
-    /// New title.
-    #[arg(long, value_name = "title")]
-    pub title: Option<String>,
-
-    /// New artist.
-    #[arg(long, value_name = "artist")]
-    pub artist: Option<String>,
-
-    /// New album.
-    #[arg(long, value_name = "album")]
-    pub album: Option<String>,
-
-    /// New album artist.
-    #[arg(long, value_name = "album-artist")]
-    pub album_artist: Option<String>,
-
-    /// New recording / release date.
-    #[arg(long, value_name = "date")]
-    pub date: Option<NaiveDate>,
-
-    /// New track number.
-    #[arg(long, value_name = "track-number")]
-    pub track_number: Option<usize>,
-
-    /// New disc number.
-    #[arg(long, value_name = "disc-number")]
-    pub disc_number: Option<usize>,
-
-    /// New genre.
-    #[arg(long, value_name = "genre")]
-    pub genre: Option<String>,
-
-    /// New composer.
-    #[arg(long, value_name = "composer")]
-    pub composer: Option<String>,
-
-    /// New lyricist.
-    #[arg(long, value_name = "lyricist")]
-    pub lyricist: Option<String>,
-
-    /// Path to new lyrics text file.
-    #[arg(long, value_name = "lyrics")]
-    pub lyrics: Option<PathBuf>,
-
-    /// Path to new front cover image file.
-    #[arg(long, value_name = "front-cover")]
-    pub front_cover: Option<PathBuf>,
-}
-
-impl FilterArgs {
-    /// Returns whether args are empty.
-    pub fn is_empty(&self) -> bool {
-        self.titles.is_empty()
-            && self.artists.is_empty()
-            && self.albums.is_empty()
-            && self.album_artists.is_empty()
-            && self.dates.is_empty()
-            && self.track_numbers.is_empty()
-            && self.disc_numbers.is_empty()
-            && self.genres.is_empty()
-            && self.composers.is_empty()
-            && self.lyricists.is_empty()
-            && self.hashes.is_empty()
-    }
-}
-
-impl TryFrom<FilterArgs> for TrackFilter {
-    type Error = McatError;
-
-    fn try_from(f: FilterArgs) -> Result<Self, Self::Error> {
-        let dates = f
-            .dates
-            .into_iter()
-            .map(|s| NaiveDate::from_str(&s))
-            .collect::<Result<_, chrono::ParseError>>()?;
-
-        Ok(TrackFilter::new(
-            f.titles,
-            f.artists,
-            f.albums,
-            f.album_artists,
-            dates,
-            f.track_numbers,
-            f.disc_numbers,
-            f.genres,
-            f.composers,
-            f.lyricists,
-            f.hashes,
-        ))
-    }
-}
-
-impl EditArgs {
-    /// Returns whether args are empty.
-    pub fn is_empty(&self) -> bool {
-        self.title.is_none()
-            && self.artist.is_none()
-            && self.album.is_none()
-            && self.album_artist.is_none()
-            && self.date.is_none()
-            && self.track_number.is_none()
-            && self.disc_number.is_none()
-            && self.genre.is_none()
-            && self.composer.is_none()
-            && self.lyricist.is_none()
-            && self.lyrics.is_none()
-            && self.front_cover.is_none()
+impl From<FilterArgs> for TrackFilter {
+    fn from(filter_args: FilterArgs) -> Self {
+        Self {
+            ids: filter_args.ids.into_iter().collect(),
+            titles: filter_args.titles.into_iter().collect(),
+            artists: filter_args.artists.into_iter().collect(),
+            albums: filter_args.albums.into_iter().collect(),
+            album_artists: filter_args.album_artists.into_iter().collect(),
+            recording_dates: filter_args.recording_dates.into_iter().collect(),
+            release_dates: filter_args.release_dates.into_iter().collect(),
+            track_numbers: filter_args.track_numbers.into_iter().collect(),
+            disc_numbers: filter_args.disc_numbers.into_iter().collect(),
+            genres: filter_args.genres.into_iter().collect(),
+            composers: filter_args.composers.into_iter().collect(),
+            lyricists: filter_args.lyricists.into_iter().collect(),
+        }
     }
 }
