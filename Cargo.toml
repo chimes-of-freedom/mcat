@@ -10,7 +10,7 @@ description = "Music Cataloging Tool"
 anyhow = "1.0.102"
 blake3 = "1.8.5"
 clap = { version = "4.6.1", features = ["derive"] }
-indexmap = {version = "2.14.0", features = ["serde"]}
+indexmap = { version = "2.14.0", features = ["serde"] }
 lofty = "0.24.0"
 rusqlite = { version = "0.40.1", features = ["bundled"] }
 serde = { version = "1.0.228", features = ["derive"] }
