@@ -2,7 +2,7 @@
 
 mcat (Music CATalog) is a music cataloging tool aimed at providing a graceful way to manage music files along with their metadata.
 
-> [!Info]
+> [!Warning]
 >
 > mcat is under active development and may have lots of bugs and missing features.
 
@@ -18,7 +18,7 @@ cargo build -r # target under `target/release`
 Make a directory as your repository, and place your music files under `media/`.
 
 ```sh
-mkdir my_music_repo && cd my_musci_repo
+mkdir my_music_repo && cd my_music_repo
 cp -r /path/to/your/music/files/directory media
 ```
 
@@ -81,7 +81,9 @@ $ mcat ls
 │ 6  │ Saeglopur         │ Sigur Rós │ We Play Endlessly         │
 └────┴───────────────────┴───────────┴───────────────────────────┘
 
-$ mcat ls --column title --column album --column artist --artist="Ally Kerr" --artist="Bob Dylan" --album="Upgrade Me"
+$ mcat ls \
+  --column title --column album --column artist \
+  --artist="Ally Kerr" --artist="Bob Dylan" --album="Upgrade Me"
 ┌───────────────────┬──────────────┬───────────┐
 │ title             │ album        │ artist    │
 ├───────────────────┼──────────────┼───────────┤
@@ -154,7 +156,7 @@ $ ls media
 
 `mcat remove` / `mcat rm` removes selected tracks from the repository. No tracks are removed by default.
 
-> [!Info]
+> [!Warning]
 >
 > `mcat remove` is not designed to delete BLOB rows in the database and track files under `media/` automatically.
 
