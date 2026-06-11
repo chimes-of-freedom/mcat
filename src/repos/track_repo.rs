@@ -62,6 +62,8 @@ impl<'a> TrackRepo<'a> {
                     front_cover_id  INTEGER REFERENCES images(id),
                     file_id         INTEGER REFERENCES track_files(id)
                 );
+
+                PRAGMA foreign_keys = ON;
                 ",
             )
             .context("rusqlite init track tables failed")?;
