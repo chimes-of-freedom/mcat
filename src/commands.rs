@@ -8,7 +8,7 @@ mod update;
 
 use std::collections::{HashMap, HashSet};
 
-use anyhow::{Context, Result, ensure};
+use anyhow::{Context, Ok, Result, anyhow, ensure};
 use clap::Parser;
 
 use crate::{
@@ -83,9 +83,18 @@ fn parse_update_kvs(
     kvs_to_set: Vec<String>,
     cols_to_clear: Vec<String>,
 ) -> Result<HashMap<String, Patch>> {
-    let mut kvs_patched = HashMap::new();
+    let kvs_to_set: HashMap<_, _> = kvs_to_set
+        .iter()
+        .map(|s| -> Result<_> {
+            s.split_once('=').context(format!(
+                "Param --set={} does not match the pattern \"key=value\"",
+                s,
+            ))
+        })
+        .collect::<Result<_>>()?;
+
     // Valid columns and for each whether it can be cleared.
-    let cols_valid = [
+    [
         ("title", false),
         ("artist", true),
         ("album", true),
@@ -100,45 +109,20 @@ fn parse_update_kvs(
         ("lyrics", true),
         ("front_cover", true),
         ("track_file", false),
-    ];
-
-    let kvs_to_set: HashMap<_, _> = kvs_to_set
-        .iter()
-        .map(|s| -> Result<_> {
-            s.split_once('=').context(format!(
-                "Param --set={} does not match the pattern \"key=value\"",
-                s,
-            ))
-        })
-        .collect::<Result<_>>()?;
-
-    for (col, can_be_cleared) in cols_valid {
-        let to_be_set = kvs_to_set.contains_key(&col);
-        let to_be_cleared = cols_to_clear.contains(&col.to_string());
-
-        ensure!(
-            !(to_be_set && to_be_cleared),
-            "Field {} cannot be set and cleared at the same time",
-            col,
-        );
-        ensure!(
-            #[allow(clippy::nonminimal_bool)]
-            !(!can_be_cleared && to_be_cleared),
-            "Field {} cannot be cleared",
-            col
-        );
-
-        if to_be_set {
-            kvs_patched.insert(
-                col.to_string(),
-                Patch::Set(kvs_to_set.get(col).unwrap().to_string()),
-            );
-        } else if to_be_cleared {
-            kvs_patched.insert(col.to_string(), Patch::Clear);
-        } else {
-            kvs_patched.insert(col.to_string(), Patch::Keep);
+    ]
+    .into_iter()
+    .map(|(col, allow_clear)| {
+        let to_clear = cols_to_clear.contains(&col.to_string());
+        match (kvs_to_set.get(col), to_clear) {
+            (Some(_), true) => Err(anyhow!(
+                "Field {} cannot be set and cleared at the same time",
+                col,
+            )),
+            (Some(val), false) => Ok((col.to_string(), Patch::Set(val.to_string()))),
+            (None, true) if !allow_clear => Err(anyhow!("Field {} cannot be cleared", col)),
+            (None, true) => Ok((col.to_string(), Patch::Clear)),
+            (None, false) => Ok((col.to_string(), Patch::Keep)),
         }
-    }
-
-    Ok(kvs_patched)
+    })
+    .collect()
 }

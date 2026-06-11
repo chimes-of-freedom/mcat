@@ -85,7 +85,11 @@ impl<'a> TrackRepo<'a> {
     /// - Fails to read the track file when computing it's hash.
     /// - SQL operations go wrong.
     pub fn insert(&mut self, new_track: NewTrack) -> Result<Track> {
-        let file_name = new_track.file.path.file_name().unwrap();
+        let file_name = new_track
+            .file
+            .path
+            .file_name()
+            .with_context(|| format!("Path {:?} terminates in ..", new_track.file.path))?;
         let file_path = Path::new("media").join(file_name);
 
         // Copy file to "media/".
@@ -101,7 +105,15 @@ impl<'a> TrackRepo<'a> {
         )?;
         let track_file = TrackFile {
             id: file_id,
-            name: file_name.to_str().unwrap().to_string(),
+            name: file_name
+                .to_str()
+                .with_context(|| {
+                    format!(
+                        "File name {} is not a valid UTF-8 string",
+                        file_name.to_string_lossy(),
+                    )
+                })?
+                .to_string(),
             hash: file_hash,
         };
 
