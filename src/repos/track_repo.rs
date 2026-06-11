@@ -39,7 +39,7 @@ impl<'a> TrackRepo<'a> {
                     data  BLOB
                 );
 
-                CREATE TABLE files (
+                CREATE TABLE track_files (
                     id    INTEGER PRIMARY KEY,
                     name  TEXT NOT NULL,
                     hash  BLOB NOT NULL UNIQUE
@@ -60,7 +60,7 @@ impl<'a> TrackRepo<'a> {
                     lyricist        TEXT,
                     lyrics_id       INTEGER REFERENCES lyrics(id),
                     front_cover_id  INTEGER REFERENCES images(id),
-                    file_id         INTEGER REFERENCES files(id)
+                    file_id         INTEGER REFERENCES track_files(id)
                 );
                 ",
             )
@@ -73,7 +73,7 @@ impl<'a> TrackRepo<'a> {
     ///
     /// - BLOB fields are inserted into their own tables.
     /// - The track file is copied to `media/` if outside,
-    ///   and a [`TrackFile`] is inserted into table "files".
+    ///   and a [`TrackFile`] is inserted into table "track_files".
     ///
     /// # Errors
     ///
@@ -91,12 +91,12 @@ impl<'a> TrackRepo<'a> {
         // Copy file to "media/".
         common::atomic_copy(&new_track.file.path, &file_path)?;
 
-        // Insert `TrackFile` into table "files".
+        // Insert `TrackFile` into table "track_files".
         let file_hash = common::compute_file_hash(&file_path)?;
         let file_id = self.insert_or_get_id(
-            "INSERT OR IGNORE INTO files (name, hash) VALUES (?1, ?2)",
+            "INSERT OR IGNORE INTO track_files (name, hash) VALUES (?1, ?2)",
             (file_name.to_str(), &file_hash),
-            "SELECT id FROM files WHERE hash = ?1",
+            "SELECT id FROM track_files WHERE hash = ?1",
             (&file_hash,),
         )?;
         let track_file = TrackFile {
@@ -263,9 +263,9 @@ impl<'a> TrackRepo<'a> {
             let track_hash = common::compute_file_hash(&dst_path)?;
 
             let file_id = self.insert_or_get_id(
-                "INSERT OR IGNORE INTO files (name, hash) VALUES (?, ?)",
+                "INSERT OR IGNORE INTO track_files (name, hash) VALUES (?, ?)",
                 (file_name, &track_hash),
-                "SELECT id FROM files WHERE hash = ?",
+                "SELECT id FROM track_files WHERE hash = ?",
                 (&track_hash,),
             )?;
 
@@ -454,6 +454,6 @@ impl<'a> TrackRepo<'a> {
     }
 
     fn check_table_name(table_name: &str) -> bool {
-        ["tracks", "lyrics", "images", "files"].contains(&table_name)
+        ["tracks", "lyrics", "images", "track_files"].contains(&table_name)
     }
 }
