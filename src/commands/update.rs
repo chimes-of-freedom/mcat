@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use rusqlite::Connection;
 
 use crate::{
@@ -28,9 +28,9 @@ pub fn execute(
         return Ok(());
     }
 
-    let conn = Connection::open(".mcat/track_repo.sqlite")?;
-    let mut track_repo = TrackRepo::new(&conn);
-    let tracks_updated = track_repo.update(&filter, &mut cols_patched)?;
+    let mut conn = Connection::open(".mcat/track_repo.sqlite")?;
+    let tx = conn.transaction()?;
+    let tracks_updated = TrackRepo::update(&tx, &filter, &mut cols_patched)?;
 
     if detailed {
         println!("{}", serde_json::to_string_pretty(&tracks_updated)?);
@@ -38,5 +38,6 @@ pub fn execute(
         println!("{} tracks updated.", tracks_updated.len());
     }
 
-    Ok(())
+    tx.commit()
+        .context("Committing transaction (update) failed")
 }

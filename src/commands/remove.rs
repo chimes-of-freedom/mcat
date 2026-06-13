@@ -1,6 +1,6 @@
 //! Remove tracks in the repository. Offer options to specify filter conditions.
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use rusqlite::Connection;
 
 use crate::{models::TrackFilter, repos::TrackRepo};
@@ -18,9 +18,9 @@ pub fn execute(filter: TrackFilter, detailed: bool) -> Result<()> {
         return Ok(());
     }
 
-    let conn = Connection::open(".mcat/track_repo.sqlite")?;
-    let mut track_repo = TrackRepo::new(&conn);
-    let tracks_removed = track_repo.remove(&filter)?;
+    let mut conn = Connection::open(".mcat/track_repo.sqlite")?;
+    let tx = conn.transaction()?;
+    let tracks_removed = TrackRepo::remove(&tx, &filter)?;
 
     if detailed {
         println!("{}", serde_json::to_string_pretty(&tracks_removed)?);
@@ -28,5 +28,6 @@ pub fn execute(filter: TrackFilter, detailed: bool) -> Result<()> {
         println!("{} tracks removed.", tracks_removed.len());
     }
 
-    Ok(())
+    tx.commit()
+        .context("Committing transaction (remove) failed")
 }

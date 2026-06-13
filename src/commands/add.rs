@@ -5,15 +5,15 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use anyhow::{Result, ensure};
+use anyhow::{Context, Result, ensure};
 use lofty::{prelude::*, probe::Probe};
 use rusqlite::Connection;
 
 use crate::{models::NewTrack, repos::TrackRepo};
 
 pub fn execute(paths: Vec<PathBuf>, recursive: bool) -> Result<()> {
-    let conn = Connection::open(".mcat/track_repo.sqlite")?;
-    let mut track_repo = TrackRepo::new(&conn);
+    let mut conn = Connection::open(".mcat/track_repo.sqlite")?;
+    let tx = conn.transaction()?;
 
     let mut new_tracks = vec![];
     let mut paths_ignored = vec![];
@@ -26,8 +26,10 @@ pub fn execute(paths: Vec<PathBuf>, recursive: bool) -> Result<()> {
     let new_tracks_len = new_tracks.len();
 
     for new_track in new_tracks {
-        track_repo.insert(new_track)?;
+        TrackRepo::insert(&tx, new_track)?;
     }
+
+    tx.commit().context("Committing transaction (add) failed")?;
 
     println!(
         "{} tracks added, {} paths omitted.",

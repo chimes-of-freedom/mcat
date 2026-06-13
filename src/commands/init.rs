@@ -2,7 +2,7 @@
 
 use std::{collections::HashSet, fs, path::Path};
 
-use anyhow::{Result, ensure};
+use anyhow::{Context, Result, ensure};
 use lofty::{prelude::*, probe::Probe};
 use rusqlite::Connection;
 
@@ -17,10 +17,10 @@ pub fn execute(forced: bool) -> Result<()> {
     }
     fs::create_dir(".mcat")?;
 
-    let conn = Connection::open(".mcat/track_repo.sqlite")?;
-    let mut track_repo = TrackRepo::new(&conn);
+    let mut conn = Connection::open(".mcat/track_repo.sqlite")?;
+    let tx = conn.transaction()?;
 
-    track_repo.init()?;
+    TrackRepo::init(&tx)?;
 
     let mut cores_filtered = HashSet::new();
     for file in fs::read_dir("media")? {
@@ -31,10 +31,10 @@ pub fn execute(forced: bool) -> Result<()> {
         {
             let new_track = NewTrack::from_tag(tag, file.path());
             if cores_filtered.insert(new_track.metadata.core.clone()) {
-                track_repo.insert(new_track)?;
+                TrackRepo::insert(&tx, new_track)?;
             }
         }
     }
 
-    Ok(())
+    tx.commit().context("Committing transaction (init) failed")
 }

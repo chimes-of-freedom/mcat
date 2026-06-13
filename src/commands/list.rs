@@ -16,9 +16,8 @@ pub fn execute(in_json: bool, filter: TrackFilter, mut cols: Vec<String>) -> Res
     dedup_columns(&mut cols);
 
     let conn = Connection::open(".mcat/track_repo.sqlite")?;
-    let track_repo = TrackRepo::new(&conn);
 
-    let track_rows = track_repo.list(&filter)?;
+    let track_rows = TrackRepo::list(&conn, &filter)?;
     if cols.is_empty() {
         cols = vec!["id", "title", "artist", "album"]
             .into_iter()

@@ -7,26 +7,19 @@ use std::{
 };
 
 use anyhow::{Context, Result, ensure};
-use rusqlite::{Connection, Params, params_from_iter, types::Value};
+use rusqlite::{Connection, Params, Transaction, params_from_iter, types::Value};
 
 use crate::{
     common,
     models::{Image, Lyrics, NewTrack, Patch, Track, TrackFile, TrackFilter, TrackRow},
 };
 
-pub struct TrackRepo<'a> {
-    conn: &'a Connection,
-}
+pub struct TrackRepo;
 
-impl<'a> TrackRepo<'a> {
-    pub fn new(conn: &'a Connection) -> Self {
-        Self { conn }
-    }
-
-    pub fn init(&self) -> Result<()> {
-        self.conn
-            .execute_batch(
-                "
+impl TrackRepo {
+    pub fn init(tx: &Transaction) -> Result<()> {
+        tx.execute_batch(
+            "
                 CREATE TABLE lyrics (
                     id    INTEGER PRIMARY KEY,
                     hash  BLOB NOT NULL UNIQUE,
@@ -65,8 +58,8 @@ impl<'a> TrackRepo<'a> {
 
                 PRAGMA foreign_keys = ON;
                 ",
-            )
-            .context("rusqlite init track tables failed")?;
+        )
+        .context("rusqlite init track tables failed")?;
 
         Ok(())
     }
@@ -86,7 +79,7 @@ impl<'a> TrackRepo<'a> {
     /// - Fails to copy the track file to `media/`.
     /// - Fails to read the track file when computing it's hash.
     /// - SQL operations go wrong.
-    pub fn insert(&mut self, new_track: NewTrack) -> Result<Track> {
+    pub fn insert(tx: &Transaction, new_track: NewTrack) -> Result<Track> {
         let file_name = new_track
             .file
             .path
@@ -99,7 +92,8 @@ impl<'a> TrackRepo<'a> {
 
         // Insert `TrackFile` into table "track_files".
         let file_hash = common::compute_file_hash(&file_path)?;
-        let file_id = self.insert_or_get_id(
+        let file_id = Self::insert_or_get_id(
+            &tx,
             "INSERT OR IGNORE INTO track_files (name, hash) VALUES (?1, ?2)",
             (file_name.to_str(), &file_hash),
             "SELECT id FROM track_files WHERE hash = ?1",
@@ -122,7 +116,8 @@ impl<'a> TrackRepo<'a> {
         // Insert lyrics into table "lyrics".
         let lyrics = if let Some(new_lyrics) = &new_track.metadata.lyrics {
             let lyrics_hash = common::compute_data_hash(&new_lyrics.data);
-            let lyrics_id = self.insert_or_get_id(
+            let lyrics_id = Self::insert_or_get_id(
+                &tx,
                 "INSERT OR IGNORE INTO lyrics (hash, data) VALUES (?1, ?2)",
                 (&lyrics_hash, &new_lyrics.data),
                 "SELECT id FROM lyrics WHERE hash = ?1",
@@ -137,7 +132,8 @@ impl<'a> TrackRepo<'a> {
         // Insert front cover into table "images".
         let front_cover = if let Some(new_front_cover) = &new_track.metadata.front_cover {
             let front_cover_hash = common::compute_data_hash(&new_front_cover.data);
-            let front_cover_id = self.insert_or_get_id(
+            let front_cover_id = Self::insert_or_get_id(
+                &tx,
                 "INSERT OR IGNORE INTO images (hash, data) VALUES (?1, ?2)",
                 (&front_cover_hash, &new_front_cover.data),
                 "SELECT id FROM images WHERE hash = ?1",
@@ -154,72 +150,67 @@ impl<'a> TrackRepo<'a> {
         };
 
         // Insert track into table "tracks".
-        self.conn
-            .execute(
-                "
+        tx.execute(
+            "
                 INSERT OR IGNORE INTO tracks (
                     title, artist, album, album_artist,
                     recording_date, release_date, track_number, disc_number,
                     genre, composer, lyricist, lyrics_id, front_cover_id, file_id
                 ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)
                 ",
-                (
-                    &new_track.metadata.core.title,
-                    &new_track.metadata.core.artist,
-                    &new_track.metadata.core.album,
-                    &new_track.metadata.core.album_artist,
-                    &new_track.metadata.core.recording_date,
-                    &new_track.metadata.core.release_date,
-                    &new_track.metadata.core.track_number,
-                    &new_track.metadata.core.disc_number,
-                    &new_track.metadata.core.genre,
-                    &new_track.metadata.core.composer,
-                    &new_track.metadata.core.lyricist,
-                    lyrics.as_ref().map(|lrc| lrc.id),
-                    front_cover.as_ref().map(|fc| fc.id),
-                    track_file.id,
-                ),
-            )
-            .context("rusqlite inserts track failed")?;
+            (
+                &new_track.metadata.core.title,
+                &new_track.metadata.core.artist,
+                &new_track.metadata.core.album,
+                &new_track.metadata.core.album_artist,
+                &new_track.metadata.core.recording_date,
+                &new_track.metadata.core.release_date,
+                &new_track.metadata.core.track_number,
+                &new_track.metadata.core.disc_number,
+                &new_track.metadata.core.genre,
+                &new_track.metadata.core.composer,
+                &new_track.metadata.core.lyricist,
+                lyrics.as_ref().map(|lrc| lrc.id),
+                front_cover.as_ref().map(|fc| fc.id),
+                track_file.id,
+            ),
+        )
+        .context("rusqlite inserts track failed")?;
 
         Ok(Track::from_new(
             new_track,
-            self.conn.last_insert_rowid(),
+            tx.last_insert_rowid(),
             lyrics,
             front_cover,
             track_file,
         ))
     }
 
-    pub fn list(&self, filter: &TrackFilter) -> Result<Vec<TrackRow>> {
+    pub fn list(conn: &Connection, filter: &TrackFilter) -> Result<Vec<TrackRow>> {
         let (where_clause, params) = Self::build_where_clause(filter);
 
-        let mut stmt = self
-            .conn
-            .prepare(&format!("SELECT * FROM tracks {where_clause}"))?;
+        let mut stmt = conn.prepare(&format!("SELECT * FROM tracks {where_clause}"))?;
         let rows = stmt.query_map(params_from_iter(params), TrackRow::from_row)?;
 
         Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
     }
 
-    pub fn remove(&mut self, filter: &TrackFilter) -> Result<Vec<TrackRow>> {
+    pub fn remove(tx: &Transaction, filter: &TrackFilter) -> Result<Vec<TrackRow>> {
         let (where_clause, params) = Self::build_where_clause(filter);
 
-        let mut stmt = self
-            .conn
-            .prepare(&format!("DELETE FROM tracks {where_clause} RETURNING *"))?;
+        let mut stmt = tx.prepare(&format!("DELETE FROM tracks {where_clause} RETURNING *"))?;
         let rows = stmt.query_map(params_from_iter(params), TrackRow::from_row)?;
 
         Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
     }
 
-    pub fn remove_by_id(&mut self, table_name: &str, ids: &[i64]) -> Result<i64> {
+    pub fn remove_by_id(tx: Transaction, table_name: &str, ids: &[i64]) -> Result<i64> {
         ensure!(Self::check_table_name(table_name));
 
         let place_holders = std::iter::repeat_n("?", ids.len())
             .collect::<Vec<_>>()
             .join(", ");
-        let rows_count = self.conn.execute(
+        let rows_count = tx.execute(
             &format!("DELETE FROM {table_name} WHERE id IN ({place_holders})"),
             params_from_iter(ids),
         )?;
@@ -228,7 +219,7 @@ impl<'a> TrackRepo<'a> {
     }
 
     pub fn update(
-        &mut self,
+        tx: &Transaction,
         filter: &TrackFilter,
         cols_patched: &mut HashMap<String, Patch>,
     ) -> Result<Vec<TrackRow>> {
@@ -239,7 +230,8 @@ impl<'a> TrackRepo<'a> {
             if let Some(Patch::Set(path)) = cols_patched.get(table_name) {
                 let data = fs::read(path)?;
                 let hash = common::compute_data_hash(&data);
-                let id = self.insert_or_get_id(
+                let id = Self::insert_or_get_id(
+                    tx,
                     &format!("INSERT OR IGNORE INTO {table_name} (hash, data) VALUES (?, ?)"),
                     (&hash, &data),
                     &format!("SELECT id FROM {table_name} WHERE hash = ?"),
@@ -276,7 +268,8 @@ impl<'a> TrackRepo<'a> {
             common::atomic_copy(src_path, &dst_path)?;
             let track_hash = common::compute_file_hash(&dst_path)?;
 
-            let file_id = self.insert_or_get_id(
+            let file_id = Self::insert_or_get_id(
+                tx,
                 "INSERT OR IGNORE INTO track_files (name, hash) VALUES (?, ?)",
                 (file_name, &track_hash),
                 "SELECT id FROM track_files WHERE hash = ?",
@@ -293,7 +286,7 @@ impl<'a> TrackRepo<'a> {
         params.extend(set_params);
         params.extend(where_params);
 
-        let mut stmt = self.conn.prepare(&format!(
+        let mut stmt = tx.prepare(&format!(
             "UPDATE tracks {set_clause} {where_clause} RETURNING *"
         ))?;
         let rows = stmt.query_map(params_from_iter(params), TrackRow::from_row)?;
@@ -302,19 +295,17 @@ impl<'a> TrackRepo<'a> {
     }
 
     fn insert_or_get_id(
-        &self,
+        tx: &Transaction,
         insert_sql: &str,
         insert_params: impl Params,
         select_sql: &str,
         select_params: impl Params,
     ) -> Result<i64> {
-        let rows_changed = self.conn.execute(insert_sql, insert_params)?;
+        let rows_changed = tx.execute(insert_sql, insert_params)?;
         if rows_changed != 0 {
-            Ok(self.conn.last_insert_rowid())
+            Ok(tx.last_insert_rowid())
         } else {
-            Ok(self
-                .conn
-                .query_one(select_sql, select_params, |row| row.get("id"))?)
+            Ok(tx.query_one(select_sql, select_params, |row| row.get("id"))?)
         }
     }
 
