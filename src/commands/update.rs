@@ -30,7 +30,7 @@ pub fn execute(
 
     let mut conn = Connection::open(".mcat/track_repo.sqlite")?;
     let tx = conn.transaction()?;
-    let tracks_updated = TrackRepo::update(&tx, &filter, &mut cols_patched)?;
+    let tracks_updated = TrackRepo::update_by_filter(&tx, &filter, &mut cols_patched)?;
 
     if detailed {
         println!("{}", serde_json::to_string_pretty(&tracks_updated)?);

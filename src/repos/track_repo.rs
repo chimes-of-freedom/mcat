@@ -186,7 +186,7 @@ impl TrackRepo {
         ))
     }
 
-    pub fn list(conn: &Connection, filter: &TrackFilter) -> Result<Vec<TrackRow>> {
+    pub fn select_by_filter(conn: &Connection, filter: &TrackFilter) -> Result<Vec<TrackRow>> {
         let (where_clause, params) = Self::build_where_clause(filter);
 
         let mut stmt = conn.prepare(&format!("SELECT * FROM tracks {where_clause}"))?;
@@ -195,7 +195,7 @@ impl TrackRepo {
         Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
     }
 
-    pub fn remove(tx: &Transaction, filter: &TrackFilter) -> Result<Vec<TrackRow>> {
+    pub fn remove_by_filter(tx: &Transaction, filter: &TrackFilter) -> Result<Vec<TrackRow>> {
         let (where_clause, params) = Self::build_where_clause(filter);
 
         let mut stmt = tx.prepare(&format!("DELETE FROM tracks {where_clause} RETURNING *"))?;
@@ -218,7 +218,7 @@ impl TrackRepo {
         Ok(rows_count as i64)
     }
 
-    pub fn update(
+    pub fn update_by_filter(
         tx: &Transaction,
         filter: &TrackFilter,
         cols_patched: &mut HashMap<String, Patch>,
