@@ -65,7 +65,7 @@ impl TrackRepo {
         Ok(())
     }
 
-    /// Inserts a track into [`TrackRepo`] and returns a [`Track`].
+    /// Inserts a track into the repository and returns a [`Track`].
     ///
     /// - BLOB fields are inserted into their own tables.
     /// - The track file is copied to `media/` if outside,
@@ -82,6 +82,13 @@ impl TrackRepo {
     /// - SQL operations go wrong.
     pub fn insert_track(tx: &Transaction, new_track: NewTrack) -> Result<Track> {
         TableTracks::insert_one(tx, new_track)
+    }
+
+    /// Inserts a vec of tracks into the repository and returns [`Vec<Track>`].
+    /// 
+    /// See also [`Self::insert_track`].
+    pub fn insert_tracks(tx: &Transaction, new_tracks: Vec<NewTrack>) -> Result<Vec<Track>> {
+        TableTracks::insert_many(tx, new_tracks)
     }
 
     pub fn select_tracks_by_filter(

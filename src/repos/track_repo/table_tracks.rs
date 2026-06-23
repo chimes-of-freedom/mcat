@@ -92,6 +92,13 @@ impl TableTracks {
         ))
     }
 
+    pub(super) fn insert_many(tx: &Transaction, new_tracks: Vec<NewTrack>) -> Result<Vec<Track>> {
+        new_tracks
+            .into_iter()
+            .map(|track| Self::insert_one(tx, track))
+            .collect::<Result<_>>()
+    }
+
     pub(super) fn select_by_filter(
         conn: &Connection,
         filter: &TrackFilter,
