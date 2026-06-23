@@ -11,8 +11,8 @@ use crate::models::TrackFilter;
     version,
     about,
     long_about = "
-mcat is a music cataloging tool aimed at providing a
-graceful way to manage music files along with their metadata.",
+mcat is a music cataloging tool aimed at providing a graceful
+way to manage music files along with their metadata.",
     disable_help_subcommand = true
 )]
 pub struct Cli {

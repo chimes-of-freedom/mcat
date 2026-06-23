@@ -36,8 +36,8 @@ The CLI of mcat consists of subcommands and options.
 
 ```text
 $ mcat --help
-mcat is a music cataloging tool aimed at providing a
-graceful way to manage music files along with their metadata.
+mcat is a music cataloging tool aimed at providing a graceful
+way to manage music files along with their metadata.
 
 Usage: mcat <COMMAND>
 

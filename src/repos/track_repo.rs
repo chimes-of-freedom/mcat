@@ -85,18 +85,18 @@ impl TrackRepo {
     }
 
     /// Inserts a vec of tracks into the repository and returns [`Vec<Track>`].
-    /// 
+    ///
     /// See also [`Self::insert_track`].
     pub fn insert_tracks(tx: &Transaction, new_tracks: Vec<NewTrack>) -> Result<Vec<Track>> {
         TableTracks::insert_many(tx, new_tracks)
     }
 
     /// Selects a row from table "tracks" by id. Expects exactly one row returned.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// Returns an error when:
-    /// 
+    ///
     /// - The query returns more than one row.
     /// - No results are returned.
     pub fn select_track_by_id(conn: &Connection, id: i64) -> Result<TrackRow> {
