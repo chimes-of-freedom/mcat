@@ -99,6 +99,14 @@ impl TableTracks {
             .collect::<Result<_>>()
     }
 
+    pub(super) fn select_by_id(conn: &Connection, id: i64) -> Result<TrackRow> {
+        Ok(conn.query_one(
+            "SELECT * FROM tracks WHERE id = ?",
+            (id,),
+            TrackRow::from_row,
+        )?)
+    }
+
     pub(super) fn select_by_filter(
         conn: &Connection,
         filter: &TrackFilter,

@@ -91,6 +91,18 @@ impl TrackRepo {
         TableTracks::insert_many(tx, new_tracks)
     }
 
+    /// Selects a row from table "tracks" by id. Expects exactly one row returned.
+    /// 
+    /// # Errors
+    /// 
+    /// Returns an error when:
+    /// 
+    /// - The query returns more than one row.
+    /// - No results are returned.
+    pub fn select_track_by_id(conn: &Connection, id: i64) -> Result<TrackRow> {
+        TableTracks::select_by_id(conn, id)
+    }
+
     pub fn select_tracks_by_filter(
         conn: &Connection,
         filter: &TrackFilter,
