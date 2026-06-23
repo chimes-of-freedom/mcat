@@ -1,17 +1,18 @@
 //! The repository for tracks.
 
-use std::{
-    collections::{HashMap, HashSet},
-    fs,
-    path::Path,
-};
+mod table_images;
+mod table_lyrics;
+mod table_track_files;
+mod table_tracks;
 
-use anyhow::{Context, Result, ensure};
-use rusqlite::{Connection, Params, Transaction, params_from_iter, types::Value};
+use std::collections::{HashMap, HashSet};
+
+use anyhow::{Context, Result};
+use rusqlite::{Connection, Params, Transaction, types::Value};
 
 use crate::{
-    common,
-    models::{Image, Lyrics, NewTrack, Patch, Track, TrackFile, TrackFilter, TrackRow},
+    models::{NewTrack, Patch, Track, TrackFilter, TrackRow},
+    repos::track_repo::table_tracks::TableTracks,
 };
 
 pub struct TrackRepo;
@@ -79,219 +80,34 @@ impl TrackRepo {
     /// - Fails to copy the track file to `media/`.
     /// - Fails to read the track file when computing it's hash.
     /// - SQL operations go wrong.
-    pub fn insert(tx: &Transaction, new_track: NewTrack) -> Result<Track> {
-        let file_name = new_track
-            .file
-            .path
-            .file_name()
-            .with_context(|| format!("Path {:?} terminates in ..", new_track.file.path))?;
-        let file_path = Path::new("media").join(file_name);
-
-        // Copy file to "media/".
-        common::atomic_copy(&new_track.file.path, &file_path)?;
-
-        // Insert `TrackFile` into table "track_files".
-        let file_hash = common::compute_file_hash(&file_path)?;
-        let file_id = Self::insert_or_get_id(
-            &tx,
-            "INSERT OR IGNORE INTO track_files (name, hash) VALUES (?1, ?2)",
-            (file_name.to_str(), &file_hash),
-            "SELECT id FROM track_files WHERE hash = ?1",
-            (&file_hash,),
-        )?;
-        let track_file = TrackFile {
-            id: file_id,
-            name: file_name
-                .to_str()
-                .with_context(|| {
-                    format!(
-                        "File name {} is not a valid UTF-8 string",
-                        file_name.to_string_lossy(),
-                    )
-                })?
-                .to_string(),
-            hash: file_hash,
-        };
-
-        // Insert lyrics into table "lyrics".
-        let lyrics = if let Some(new_lyrics) = &new_track.metadata.lyrics {
-            let lyrics_hash = common::compute_data_hash(&new_lyrics.data);
-            let lyrics_id = Self::insert_or_get_id(
-                &tx,
-                "INSERT OR IGNORE INTO lyrics (hash, data) VALUES (?1, ?2)",
-                (&lyrics_hash, &new_lyrics.data),
-                "SELECT id FROM lyrics WHERE hash = ?1",
-                (&lyrics_hash,),
-            )?;
-
-            Some(Lyrics::from_new(new_lyrics.clone(), lyrics_id, lyrics_hash))
-        } else {
-            None
-        };
-
-        // Insert front cover into table "images".
-        let front_cover = if let Some(new_front_cover) = &new_track.metadata.front_cover {
-            let front_cover_hash = common::compute_data_hash(&new_front_cover.data);
-            let front_cover_id = Self::insert_or_get_id(
-                &tx,
-                "INSERT OR IGNORE INTO images (hash, data) VALUES (?1, ?2)",
-                (&front_cover_hash, &new_front_cover.data),
-                "SELECT id FROM images WHERE hash = ?1",
-                (&front_cover_hash,),
-            )?;
-
-            Some(Image::from_new(
-                new_front_cover.clone(),
-                front_cover_id,
-                front_cover_hash,
-            ))
-        } else {
-            None
-        };
-
-        // Insert track into table "tracks".
-        tx.execute(
-            "
-                INSERT OR IGNORE INTO tracks (
-                    title, artist, album, album_artist,
-                    recording_date, release_date, track_number, disc_number,
-                    genre, composer, lyricist, lyrics_id, front_cover_id, file_id
-                ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)
-                ",
-            (
-                &new_track.metadata.core.title,
-                &new_track.metadata.core.artist,
-                &new_track.metadata.core.album,
-                &new_track.metadata.core.album_artist,
-                &new_track.metadata.core.recording_date,
-                &new_track.metadata.core.release_date,
-                &new_track.metadata.core.track_number,
-                &new_track.metadata.core.disc_number,
-                &new_track.metadata.core.genre,
-                &new_track.metadata.core.composer,
-                &new_track.metadata.core.lyricist,
-                lyrics.as_ref().map(|lrc| lrc.id),
-                front_cover.as_ref().map(|fc| fc.id),
-                track_file.id,
-            ),
-        )
-        .context("rusqlite inserts track failed")?;
-
-        Ok(Track::from_new(
-            new_track,
-            tx.last_insert_rowid(),
-            lyrics,
-            front_cover,
-            track_file,
-        ))
+    pub fn insert_track(tx: &Transaction, new_track: NewTrack) -> Result<Track> {
+        TableTracks::insert_one(tx, new_track)
     }
 
-    pub fn select_by_filter(conn: &Connection, filter: &TrackFilter) -> Result<Vec<TrackRow>> {
-        let (where_clause, params) = Self::build_where_clause(filter);
-
-        let mut stmt = conn.prepare(&format!("SELECT * FROM tracks {where_clause}"))?;
-        let rows = stmt.query_map(params_from_iter(params), TrackRow::from_row)?;
-
-        Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
+    pub fn select_tracks_by_filter(
+        conn: &Connection,
+        filter: &TrackFilter,
+    ) -> Result<Vec<TrackRow>> {
+        TableTracks::select_by_filter(conn, filter)
     }
 
-    pub fn remove_by_filter(tx: &Transaction, filter: &TrackFilter) -> Result<Vec<TrackRow>> {
-        let (where_clause, params) = Self::build_where_clause(filter);
-
-        let mut stmt = tx.prepare(&format!("DELETE FROM tracks {where_clause} RETURNING *"))?;
-        let rows = stmt.query_map(params_from_iter(params), TrackRow::from_row)?;
-
-        Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
+    pub fn remove_tracks_by_filter(
+        tx: &Transaction,
+        filter: &TrackFilter,
+    ) -> Result<Vec<TrackRow>> {
+        TableTracks::remove_by_filter(tx, filter)
     }
 
-    pub fn remove_by_id(tx: Transaction, table_name: &str, ids: &[i64]) -> Result<i64> {
-        ensure!(Self::check_table_name(table_name));
-
-        let place_holders = std::iter::repeat_n("?", ids.len())
-            .collect::<Vec<_>>()
-            .join(", ");
-        let rows_count = tx.execute(
-            &format!("DELETE FROM {table_name} WHERE id IN ({place_holders})"),
-            params_from_iter(ids),
-        )?;
-
-        Ok(rows_count as i64)
+    pub fn remove_tracks_by_id(tx: Transaction, table_name: &str, ids: &[i64]) -> Result<i64> {
+        TableTracks::remove_by_id(tx, table_name, ids)
     }
 
-    pub fn update_by_filter(
+    pub fn update_tracks_by_filter(
         tx: &Transaction,
         filter: &TrackFilter,
         cols_patched: &mut HashMap<String, Patch>,
     ) -> Result<Vec<TrackRow>> {
-        // BLOB fields are special: paths to new files are given, and we need
-        // to insert the files into corresponding tables and update blob ids of
-        // selected rows in table "tracks".
-        for table_name in ["lyrics", "front_cover"] {
-            if let Some(Patch::Set(path)) = cols_patched.get(table_name) {
-                let data = fs::read(path)?;
-                let hash = common::compute_data_hash(&data);
-                let id = Self::insert_or_get_id(
-                    tx,
-                    &format!("INSERT OR IGNORE INTO {table_name} (hash, data) VALUES (?, ?)"),
-                    (&hash, &data),
-                    &format!("SELECT id FROM {table_name} WHERE hash = ?"),
-                    (&hash,),
-                )?;
-
-                cols_patched.remove(table_name);
-                cols_patched.insert(format!("{table_name}_id"), Patch::Set(format!("{id}")));
-            }
-        }
-
-        if let Some(Patch::Set(src_path)) = cols_patched.get("track_file") {
-            let file_name = Path::new(src_path)
-                .file_name()
-                .with_context(|| format!("Path {src_path:?} does not exist or is not a file"))?
-                .to_str()
-                .context("OsStr to &str failed")?;
-            let mut dst_path = Path::new("media/").join(file_name);
-            // Rename the copied file to avoid overwritten file already under
-            // `media/` with the same name.
-            if dst_path.try_exists()? {
-                let stem = dst_path
-                    .file_stem()
-                    .and_then(|s| s.to_str())
-                    .context("OsStr to &str failed")?;
-                let ext = dst_path.extension().and_then(|s| s.to_str());
-                let new_name = match ext {
-                    Some(ext) => format!("{stem}(1).{ext}"),
-                    None => format!("{stem}(1)"),
-                };
-                dst_path.set_file_name(new_name);
-            }
-
-            common::atomic_copy(src_path, &dst_path)?;
-            let track_hash = common::compute_file_hash(&dst_path)?;
-
-            let file_id = Self::insert_or_get_id(
-                tx,
-                "INSERT OR IGNORE INTO track_files (name, hash) VALUES (?, ?)",
-                (file_name, &track_hash),
-                "SELECT id FROM track_files WHERE hash = ?",
-                (&track_hash,),
-            )?;
-
-            cols_patched.remove("track_file");
-            cols_patched.insert("file_id".to_string(), Patch::Set(format!("{file_id}")));
-        }
-
-        let (where_clause, where_params) = Self::build_where_clause(filter);
-        let (set_clause, set_params) = Self::build_set_clause(cols_patched)?;
-        let mut params = vec![];
-        params.extend(set_params);
-        params.extend(where_params);
-
-        let mut stmt = tx.prepare(&format!(
-            "UPDATE tracks {set_clause} {where_clause} RETURNING *"
-        ))?;
-        let rows = stmt.query_map(params_from_iter(params), TrackRow::from_row)?;
-
-        Ok(rows.collect::<rusqlite::Result<Vec<_>>>()?)
+        TableTracks::update_by_filter(tx, filter, cols_patched)
     }
 
     fn insert_or_get_id(

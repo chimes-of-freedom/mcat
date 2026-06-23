@@ -26,7 +26,7 @@ pub fn execute(paths: Vec<PathBuf>, recursive: bool) -> Result<()> {
     let new_tracks_len = new_tracks.len();
 
     for new_track in new_tracks {
-        TrackRepo::insert(&tx, new_track)?;
+        TrackRepo::insert_track(&tx, new_track)?;
     }
 
     tx.commit().context("Committing transaction (add) failed")?;

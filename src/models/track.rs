@@ -137,6 +137,7 @@ pub struct TrackFile {
     pub hash: Vec<u8>,
 }
 
+#[derive(Clone)]
 pub struct NewTrackFile {
     pub path: PathBuf,
 }

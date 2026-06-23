@@ -17,7 +17,7 @@ pub fn execute(in_json: bool, filter: TrackFilter, mut cols: Vec<String>) -> Res
 
     let conn = Connection::open(".mcat/track_repo.sqlite")?;
 
-    let track_rows = TrackRepo::select_by_filter(&conn, &filter)?;
+    let track_rows = TrackRepo::select_tracks_by_filter(&conn, &filter)?;
     if cols.is_empty() {
         cols = vec!["id", "title", "artist", "album"]
             .into_iter()

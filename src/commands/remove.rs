@@ -20,7 +20,7 @@ pub fn execute(filter: TrackFilter, detailed: bool) -> Result<()> {
 
     let mut conn = Connection::open(".mcat/track_repo.sqlite")?;
     let tx = conn.transaction()?;
-    let tracks_removed = TrackRepo::remove_by_filter(&tx, &filter)?;
+    let tracks_removed = TrackRepo::remove_tracks_by_filter(&tx, &filter)?;
 
     if detailed {
         println!("{}", serde_json::to_string_pretty(&tracks_removed)?);

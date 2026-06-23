@@ -31,7 +31,7 @@ pub fn execute(forced: bool) -> Result<()> {
         {
             let new_track = NewTrack::from_tag(tag, file.path());
             if cores_filtered.insert(new_track.metadata.core.clone()) {
-                TrackRepo::insert(&tx, new_track)?;
+                TrackRepo::insert_track(&tx, new_track)?;
             }
         }
     }
